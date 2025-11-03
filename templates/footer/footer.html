@@ -1,0 +1,47 @@
+<footer style="background: linear-gradient(135deg, #4a90e2, #f4b678); color: white; padding: 2em 0; text-align: center; font-family: 'Poppins', sans-serif; flex-shrink: 0;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 1em;">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2em; margin-bottom: 2em;">
+            <div style="flex: 1; min-width: 200px;">
+                <h3 style="font-size: clamp(1.2em, 3vw, 1.5em); margin-bottom: 1em; color: #fff;">Thông tin cửa hàng</h3>
+                <p style="font-size: clamp(0.9em, 2.5vw, 1em); line-height: 1.6;">
+                    36 Electronic Shop<br>
+                    Địa chỉ: 123 Đường Công Nghệ, TP. HCM<br>
+                    Email: support@36electronicshop.vn<br>
+                    Hotline: 1900 123 456
+                </p>
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+                <h3 style="font-size: clamp(1.2em, 3vw, 1.5em); margin-bottom: 1em; color: #fff;">Liên kết nhanh</h3>
+                <ul style="list-style: none; padding: 0; font-size: clamp(0.9em, 2.5vw, 1em); line-height: 1.6;">
+                    <li><a href="index.html" style="color: #fff; text-decoration: none; transition: color 0.3s;">Trang chủ</a></li>
+                    <li><a href="products.html" style="color: #fff; text-decoration: none; transition: color 0.3s;">Sản phẩm</a></li>
+                    <li><a href="cart.html" style="color: #fff; text-decoration: none; transition: color 0.3s;">Giỏ hàng</a></li>
+                    <li><a href="contact.html" style="color: #fff; text-decoration: none; transition: color 0.3s;">Liên hệ</a></li>
+                </ul>
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+                <h3 style="font-size: clamp(1.2em, 3vw, 1.5em); margin-bottom: 1em; color: #fff;">Đăng ký nhận tin khuyến mãi</h3>
+                <div style="display: flex; justify-content: center; gap: 0.5em; flex-wrap: wrap;">
+                    <input type="email" placeholder="Nhập email của bạn" style="padding: 0.5em; border: none; border-radius: 5px; font-size: clamp(0.9em, 2.5vw, 1em); width: 200px; background: rgba(255, 255, 255, 0.9); color: #333;" required>
+                    <button onclick="subscribeNewsletter()" style="background: linear-gradient(45deg, #f4b678, #ffce85); color: #4a90e2; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: clamp(0.9em, 2.5vw, 1em); transition: background 0.3s;">
+                        Đăng ký
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div style="border-top: 1px solid rgba(255, 255, 255, 0.3); padding-top: 1em;">
+            <p style="font-size: clamp(0.9em, 2.5vw, 1em);">© 2025 36 Electronic Shop. All rights reserved.</p>
+        </div>
+    </div>
+    <script>
+        function subscribeNewsletter() {
+            const emailInput = document.querySelector('footer input[type="email"]');
+            if (emailInput && emailInput.value) {
+                alert('Cảm ơn bạn đã đăng ký nhận tin khuyến mãi! Chúng tôi sẽ gửi thông tin đến ' + emailInput.value);
+                emailInput.value = '';
+            } else {
+                alert('Vui lòng nhập email hợp lệ!');
+            }
+        }
+    </script>
+</footer>

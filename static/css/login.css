@@ -1,0 +1,185 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background: url('https://example.com/misty_forest.jpg') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.login-container {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 320px;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+    margin-bottom: 25px;
+    font-size: 24px;
+    color: #e0e0e0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.auth-form {
+    display: block;
+}
+
+.input-group {
+    margin: 15px 0;
+    text-align: left;
+    position: relative;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: none;
+    border-bottom: 2px solid #ddd;
+    background: transparent;
+    color: #fff;
+    outline: none;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-group input:focus {
+    border-bottom-color: #ff4d4d;
+    box-shadow: 0 2px 5px rgba(255, 77, 77, 0.2);
+}
+
+.input-group input::placeholder {
+    color: #bbb;
+    font-style: italic;
+}
+
+.remember {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.remember a {
+    color: #bbb;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.remember a:hover {
+    color: #ff6666;
+    text-decoration: underline;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 12px;
+    background: #ff4d4d;
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px 0;
+    border-radius: 8px;
+    transition: background 0.3s ease, transform 0.2s ease;
+    box-sizing: border-box;
+}
+
+.login-btn:hover {
+    background: #ff6666;
+    transform: translateY(-2px);
+}
+
+.register-btn {
+    width: 100%;
+    padding: 12px;
+    background: #4CAF50;
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px 0;
+    border-radius: 8px;
+    transition: background 0.3s ease, transform 0.2s ease;
+    box-sizing: border-box;
+}
+
+.register-btn:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+.footer {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #aaa;
+}
+
+#error-msg,
+#register-error-msg,
+#forgot-error-msg,
+#reset-error-msg {
+    margin-top: 10px;
+    font-size: 14px;
+    padding: 8px;
+    border-radius: 5px;
+    text-align: center;
+    display: block;
+}
+
+#error-msg.success,
+#register-error-msg.success,
+#forgot-error-msg.success,
+#reset-error-msg.success {
+    color: #fff;
+    border: 1px solid #45a049;
+}
+
+#error-msg.error,
+#register-error-msg.error,
+#forgot-error-msg.error,
+#reset-error-msg.error {
+    color: #f90202;
+    border: 1px solid #ff6666;
+}
+
+/* Responsive Styles */
+@media (max-width: 600px) {
+    .login-container {
+        width: 90%; /* Chiếm 90% chiều rộng màn hình */
+        padding: 20px; /* Giảm padding */
+    }
+
+    h2 {
+        font-size: 20px; /* Giảm kích thước font */
+    }
+
+    .input-group input {
+        padding: 10px; /* Giảm padding cho input */
+    }
+
+    .login-btn,
+    .register-btn {
+        font-size: 14px; /* Giảm kích thước font cho nút */
+    }
+
+    .footer {
+        font-size: 10px; /* Giảm kích thước font cho footer */
+    }
+}

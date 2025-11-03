@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sản Phẩm - 36 Electronic Shop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/products/products.css')}}">
+</head>
+<body>
+    {% include 'header/header.html' %}
+    <div class="container">
+        <div class="controls-section">
+            <div class="filter-section" id="filterSection">
+                <button data-category="all" class="active"><i class="fas fa-th"></i> Tất cả</button>
+                <button data-category="phones"><i class="fas fa-mobile-alt"></i> Điện thoại</button>
+                <button data-category="laptops"><i class="fas fa-laptop"></i> Laptop</button>
+                <button data-category="headphones"><i class="fas fa-headphones"></i> Tai nghe</button>
+                <button data-category="speakers"><i class="fas fa-speaker"></i> Loa</button>
+            </div>
+            <div class="sort-section" id="sortSection">
+                <button data-sort="default" class="active"><i class="fas fa-sort"></i> Mặc định</button>
+                <button data-sort="price-low-high"><i class="fas fa-sort-amount-up"></i> Giá thấp</button>
+                <button data-sort="price-high-low"><i class="fas fa-sort-amount-down"></i> Giá cao</button>
+                <button data-sort="popularity"><i class="fas fa-fire"></i> Phổ biến</button>
+                <button data-sort="rating"><i class="fas fa-star"></i> Xếp hạng</button>
+            </div>
+            <button class="filter-toggle" onclick="toggleFilterPanel()">
+                <i class="fas fa-filter"></i> Lọc
+            </button>
+        </div>
+        <div class="filter-panel" id="filterPanel">
+            <h3>Lọc sản phẩm</h3>
+            <div class="price-filter">
+                <h4>Khoảng giá</h4>
+                <label><input type="checkbox" name="price-range" value="0-10000000"> Dưới 10 triệu</label>
+                <label><input type="checkbox" name="price-range" value="10000000-20000000"> 10 - 20 triệu</label>
+                <label><input type="checkbox" name="price-range" value="20000000-30000000"> 20 - 30 triệu</label>
+                <label><input type="checkbox" name="price-range" value="30000000-40000000"> 30 - 40 triệu</label>
+                <label><input type="checkbox" name="price-range" value="40000000+"> Trên 40 triệu</label>
+            </div>
+            <div class="discount-filter">
+                <h4>Khuyến mãi</h4>
+                <label><input type="checkbox" id="discountFilter" value="discount"> Có khuyến mãi</label>
+            </div>
+            <button onclick="applyFilters()">Áp dụng</button>
+        </div>
+        <div class="product-grid" id="productGrid">
+            <!-- Sản phẩm sẽ được thêm bằng JavaScript -->
+        </div>
+    </div>
+    {% include 'footer/footer.html' %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='js/products/products.js')}}"></script>
+</body>
+</html>

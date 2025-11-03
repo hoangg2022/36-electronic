@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết Sản phẩm</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/products/product-detail.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='js/products/products.js') }}"></script>
+</head>
+<body>
+    {% include 'header/header.html' %}
+
+    <section class="product-detail-section container">
+        <h2>Chi tiết Sản phẩm</h2>
+        <div id="productDetail" class="product-detail-container">
+            <!-- Product details will be dynamically loaded here -->
+        </div>
+        <div id="reviewForm" class="review-form">
+            <h3>Viết đánh giá</h3>
+            <div class="star-rating">
+                <span class="star" data-value="1">★</span>
+                <span class="star" data-value="2">★</span>
+                <span class="star" data-value="3">★</span>
+                <span class="star" data-value="4">★</span>
+                <span class="star" data-value="5">★</span>
+            </div>
+            <textarea id="reviewComment" placeholder="Nhập bình luận của bạn..." rows="4"></textarea>
+            <button id="submitReview">Gửi đánh giá</button>
+        </div>
+        <h3>Đánh giá khách hàng</h3>
+        <div id="reviewsContainer" class="reviews-container">
+            <!-- Reviews will be dynamically loaded here -->
+        </div>
+    </section>
+
+    {% include 'footer/footer.html' %}
+</body>
+</html>

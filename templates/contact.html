@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liên hệ - Cửa hàng Điện tử</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e6f0fa, #f5f5e6);
+            overflow-x: hidden;
+        }
+        header {
+            background: linear-gradient(90deg, #4a90e2, #80c4e9);
+            color: white;
+            padding: 1.5em 2em;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        header h1 {
+            font-size: clamp(1.8em, 5vw, 2.5em);
+        }
+        header p {
+            font-size: clamp(0.9em, 2.5vw, 1em);
+            opacity: 0.9;
+        }
+        .user-menu {
+            position: absolute;
+            top: 50%;
+            right: 2em;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+            cursor: pointer;
+        }
+        .user-menu i {
+            font-size: clamp(1.2em, 3vw, 1.5em);
+            color: #fff;
+        }
+        .user-menu span {
+            font-size: clamp(0.9em, 2.5vw, 1em);
+            color: #fff;
+        }
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            min-width: 150px;
+            z-index: 100;
+        }
+        .dropdown a {
+            display: block;
+            padding: 0.8em 1em;
+            text-decoration: none;
+            color: #4a90e2;
+            font-size: clamp(0.8em, 2vw, 0.9em);
+        }
+        .dropdown a:hover {
+            background: #f0f4ff;
+        }
+        .user-menu:hover .dropdown {
+            display: block;
+        }
+        nav {
+            background: #fff;
+            padding: 1em;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        nav a {
+            margin: 0 1em;
+            text-decoration: none;
+            color: #4a90e2;
+            font-weight: 600;
+            font-size: clamp(0.9em, 2.5vw, 1.1em);
+            transition: color 0.3s, transform 0.3s;
+        }
+        nav a:hover {
+            color: #f4b678;
+            transform: translateY(-2px);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2em auto;
+            padding: 0 1em;
+        }
+        .container h2 {
+            text-align: center;
+            color: #4a90e2;
+            font-size: clamp(1.5em, 4vw, 2em);
+            margin-bottom: 1.5em;
+        }
+        .contact-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2em;
+            background: #fff;
+            border-radius: 10px;
+            padding: 2em;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .contact-form form {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+        }
+        .contact-form input, .contact-form textarea {
+            width: 100%;
+            padding: 0.8em;
+            border: none;
+            border-radius: 5px;
+            background: #f0f4ff;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+        }
+        .contact-form button {
+            background: linear-gradient(45deg, #f4b678, #ffce85);
+            color: #4a90e2;
+            border: none;
+            padding: 0.8em;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+        }
+        .contact-form button:hover {
+            background: linear-gradient(45deg, #ffce85, #f4b678);
+        }
+        .contact-info p {
+            font-size: clamp(0.9em, 2.5vw, 1em);
+            color: #555;
+            margin-bottom: 1em;
+        }
+        .contact-info i {
+            color: #4a90e2;
+            margin-right: 0.5em;
+        }
+        .map iframe {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+        }
+        footer {
+            background: linear-gradient(90deg, #4a90e2, #80c4e9);
+            color: white;
+            text-align: center;
+            padding: 2em;
+            width: 100%;
+        }
+        footer p {
+            font-size: clamp(0.9em, 2.5vw, 1em);
+            opacity: 0.9;
+        }
+        @media (max-width: 768px) {
+            nav a {
+                margin: 0 0.5em;
+            }
+            .contact-section {
+                grid-template-columns: 1fr;
+            }
+            .user-menu {
+                right: 1em;
+            }
+        }
+        @media (max-width: 480px) {
+            nav a {
+                display: block;
+                margin: 0.5em 0;
+            }
+            .contact-section {
+                padding: 1em;
+            }
+            .user-menu span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Cửa hàng Điện tử</h1>
+        <p>Khám phá công nghệ, dẫn đầu tương lai</p>
+        <div class="user-menu" id="userMenu">
+            <i class="fas fa-user"></i>
+            <span id="userName">Đăng nhập</span>
+            <div class="dropdown" id="userDropdown">
+                <a href="user.html">Thông tin cá nhân</a>
+                <a href="#" id="logoutBtn">Đăng xuất</a>
+            </div>
+        </div>
+    </header>
+    <nav>
+        <a href="index.html">Trang chủ</a>
+        <a href="products.html">Sản phẩm</a>
+        <a href="cart.html">Giỏ hàng</a>
+        <a href="contact.html">Liên hệ</a>
+    </nav>
+    <div class="container">
+        <h2>Liên hệ với chúng tôi</h2>
+        <div class="contact-section">
+            <div class="contact-form">
+                <form>
+                    <input type="text" placeholder="Họ và tên" required>
+                    <input type="email" placeholder="Email" required>
+                    <textarea placeholder="Tin nhắn" rows="5" required></textarea>
+                    <button type="submit" onclick="submitContact()">Gửi</button>
+                </form>
+            </div>
+            <div class="contact-info">
+                <p><i class="fas fa-map-marker-alt"></i> 123 Đường Công nghệ, TP.HCM, Việt Nam</p>
+                <p><i class="fas fa-phone"></i> +84 123 456 789</p>
+                <p><i class="fas fa-envelope"></i> support@cuahangdientu.vn</p>
+                <div class="map">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.447135304614!2d106.698084315271!3d10.776917392319!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f38f9ed887b%3A0x14aded5703768989!2sHo%20Chi%20Minh%20City!5e0!3m2!1sen!2s!4v1698765432109!5m2!1sen!2s" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>© 2025 Cửa hàng Điện tử. All rights reserved.</p>
+    </footer>
+    <script>
+        function submitContact() {
+            alert('Tin nhắn của bạn đã được gửi!');
+        }
+
+        // User management
+        const userMenu = document.getElementById('userMenu');
+        const userNameSpan = document.getElementById('userName');
+        const userDropdown = document.getElementById('userDropdown');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        function updateUserMenu() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (user) {
+                userNameSpan.textContent = user.name;
+                userDropdown.style.display = 'block';
+            } else {
+                userNameSpan.textContent = 'Đăng nhập';
+                userDropdown.style.display = 'none';
+                userMenu.onclick = () => promptLogin();
+            }
+        }
+
+        function promptLogin() {
+            const email = prompt('Nhập email:');
+            const password = prompt('Nhập mật khẩu:');
+            if (email && password) {
+                const user = { name: email.split('@')[0], email, password };
+                localStorage.setItem('user', JSON.stringify(user));
+                updateUserMenu();
+            }
+        }
+
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('user');
+            updateUserMenu();
+            alert('Đã đăng xuất!');
+        });
+
+        updateUserMenu();
+    </script>
+</body>
+</html>

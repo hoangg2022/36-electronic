@@ -1,0 +1,186 @@
+<header style="background: linear-gradient(135deg, #4a90e2, #f4b678); color: white; position: fixed; top: 0; width: 100%; z-index: 100; font-family: 'Poppins', sans-serif; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0.5em;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1em;">
+            <div style="flex: 0 0 auto; display: flex; align-items: center; gap: 0.5em;">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="height: 80px; width: auto;">
+                <h1 style="font-size: clamp(1.5em, 4vw, 2em); color: #fff; margin: 0;">Electronic Shop</h1>
+            </div>
+            <div style="flex: 1; min-width: 200px; display: flex; justify-content: center;">
+                <input type="text" placeholder="Tìm kiếm sản phẩm..." style="width: 100%; max-width: 400px; padding: 0.5em; border: 1px solid #ddd; border-radius: 5px; font-size: clamp(0.9em, 2.5vw, 1em); background: rgba(255, 255, 255, 0.9); color: #333;">
+                <button style="background: #fff; color: #4a90e2; border: none; padding: 0.5em 1em; border-radius: 5px; margin-left: 0.5em; cursor: pointer; font-size: clamp(0.9em, 2.5vw, 1em); transition: background 0.3s, color 0.3s, transform 0.3s; display: flex; align-items: center; gap: 0.3em;">
+                    <i class="fas fa-search" style="color: #e63946; font-size: 1.2em;"></i> Tìm
+                </button>
+            </div>
+            <div id="userMenu" style="flex: 0 0 auto; position: relative; display: flex; align-items: center; gap: 0.3em; cursor: pointer;">
+                <i class="fas fa-user" style="color: #fff; font-size: 1.2em;"></i>
+                <a id="loginLink" href="{{ url_for('login') }}" style="color: #fff;text-decoration: none; font-weight: 600; font-size: clamp(0.9em, 2.5vw, 1em); display: none;">Đăng nhập</a>
+                <div id="userName" style="border: none; border-radius: 5px; color: #fff; font-weight: 600; font-size: clamp(0.9em, 2.5vw, 1em); cursor: pointer; transition: color 0.3s; padding: 0.2em 0.5em; display: none;"></div>
+                <div id="userDropdown" style="display: none; position: absolute; top: 100%; right: 0; background: #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); border-radius: 5px; padding: 0.5em; z-index: 10;">
+                    <a href="{{ url_for('user') }}" style="display: block; padding: 0.5em 1em; color: #4a90e2; text-decoration: none; font-size: clamp(0.9em, 2.5vw, 1em);">Thông tin</a>
+                    <a id="logoutBtn" href="{{ url_for('index') }}" style="display: block; padding: 0.5em 1em; color: #e63946; text-decoration: none; font-size: clamp(0.9em, 2.5vw, 1em);">Đăng xuất</a>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+    <nav style="background: #4a90e2; padding: 0.5em; text-align: center; display: flex; justify-content: center; gap: 0.5em; flex-wrap: wrap;">
+        <a href="{{ url_for('index') }}" style="padding: 0.5em 1em; text-decoration: none; color: #fff; font-weight: 600; font-size: clamp(0.9em, 2.5vw, 1.1em); background: #4a90e2; border-radius: 5px; transition: background 0.3s, transform 0.3s, color 0.3s, box-shadow 0.3s; display: flex; align-items: center; gap: 0.3em;">
+            <i class="fas fa-house"></i> Trang chủ
+        </a>
+        <div style="display: flex; align-items: center; gap: 0.3em; background: #4a90e2; border-radius: 5px; padding: 0.5em 1em; transition: background 0.3s, transform 0.3s, box-shadow 0.3s;">
+            <i class="fas fa-box-open" style="color: #fff;"></i>
+            <select onchange="window.location.href=this.value" style="border: none; border-radius: 5px; background: #4a90e2; color: #fff; font-weight: 600; font-size: clamp(0.9em, 2.5vw, 1.1em); cursor: pointer; transition: color 0.3s;">
+                <option value="" selected disabled>Sản Phẩm</option>
+                <option value="{{ url_for('products', category='all') }}" style="background: #fff; color: #4a90e2;">Tất cả</option>
+                <option value="{{ url_for('products', category='phones') }}" style="background: #fff; color: #4a90e2;">Điện thoại</option>
+                <option value="{{ url_for('products', category='headphones') }}" style="background: #fff; color: #4a90e2;">Tai nghe</option>
+                <option value="{{ url_for('products', category='speakers') }}" style="background: #fff; color: #4a90e2;">Loa</option>
+
+            </select>
+        </div>
+        <a href="{{ url_for('cart') }}" style="padding: 0.5em 1em; text-decoration: none; color: #fff; font-weight: 600; font-size: clamp(0.9em, 2.5vw, 1.1em); background: #4a90e2; border-radius: 5px; transition: background 0.3s, transform 0.3s, color 0.3s, box-shadow 0.3s; display: flex; align-items: center; gap: 0.3em;">
+            <i class="fas fa-cart-shopping"></i> Giỏ hàng
+        </a>
+        <a href="{{ url_for('contact') }}" style="padding: 0.5em 1em; text-decoration: none; color: #fff; font-weight: 600; font-size: clamp(0.9em, 2.5vw, 1.1em); background: #4a90e2; border-radius: 5px; transition: background 0.3s, transform 0.3s, color 0.3s, box-shadow 0.3s; display: flex; align-items: center; gap: 0.3em;">
+            <i class="fas fa-envelope"></i> Liên hệ
+        </a>
+        <a href="{{ url_for('user') }}" style="padding: 0.5em 1em; text-decoration: none; color: #fff; font-weight: 600; font-size: clamp(0.9em, 2.5vw, 1.1em); background: #4a90e2; border-radius: 5px; transition: background 0.3s, transform 0.3s, color 0.3s, box-shadow 0.3s; display: flex; align-items: center; gap: 0.3em;">
+            <i class="fas fa-info-circle"></i> Thông tin
+        </a>
+    </nav>
+</header>
+<style>
+    select:hover, select:focus {
+        background: linear-gradient(135deg, #6bb5ff, #4a90e2);
+        color: #e6f0ff;
+        outline: none;
+    }
+
+    nav a:hover {
+        background: linear-gradient(135deg, #6bb5ff, #4a90e2);
+        transform: scale(1.05);
+        color: #e6f0ff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    nav div:hover {
+        background: linear-gradient(135deg, #6bb5ff, #4a90e2);
+        transform: scale(1.05);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    button:hover {
+        background: linear-gradient(135deg, #f4b678, #4a90e2);
+        transform: scale(1.05);
+        color: #e6f0ff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (max-width: 480px) {
+        nav {
+            flex-direction: column;
+            gap: 0.3em;
+        }
+
+            nav a, nav div {
+                display: flex;
+                width: 100%;
+                justify-content: center;
+            }
+
+            nav select {
+                width: auto;
+                text-align: center;
+            }
+    }
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function setupUserMenu() {
+    $.ajax({
+        url: '/api/check_login',
+        method: 'GET',
+        success: function(data) {
+            const userMenu = $('#userMenu');
+            const userNameSpan = $('#userName');
+            const userDropdown = $('#userDropdown');
+            const logoutBtn = $('#logoutBtn');
+
+            if (data.logged_in && userNameSpan.length) {
+                userNameSpan.text(data.full_name);
+                userDropdown.show();
+                userMenu.click(function() {
+                    userDropdown.toggle();
+                });
+                // Logout code
+                if (logoutBtn.length) {
+                    $('#logoutBtn').click(function(e) {
+                        e.preventDefault();
+                        $.ajax({
+                            url: '/logout',
+                            method: 'POST',
+                            success: function(response) {
+                                alert(response.message);
+                                window.location.href = response.redirect;
+                            }
+                        });
+                    });
+                }
+            } else {
+                userNameSpan.text('Đăng nhập');
+                userMenu.click(function() {
+                    window.location.href = '/login';
+                });
+                userDropdown.hide();
+            }
+        }
+    });
+}
+$(document).ready(function() {
+    const userMenu = $('#userMenu');
+    const loginLink = $('#loginLink');
+    const userName = $('#userName');
+    const userDropdown = $('#userDropdown');
+
+    // Gửi yêu cầu AJAX để lấy thông tin người dùng
+    $.ajax({
+        url: '{{ url_for("get_user") }}',
+        method: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            if (data.full_name) {
+                // Người dùng đã đăng nhập: hiển thị tên người dùng và kích khớp dropdown
+                userName.text(data.full_name).css('display', 'block');
+                loginLink.css('display', 'none');
+
+                // Hiển thị dropdown khi chuột trỏ vào userMenu
+                userMenu.on('mouseenter', function() {
+                    userDropdown.css('display', 'block');
+                });
+
+                // Ẩn dropdown khi chuột rời khỏi userMenu
+                userMenu.on('mouseleave', function() {
+                    userDropdown.css('display', 'none');
+                });
+
+                // Đóng dropdown khi chọn một tùy chọn
+                userDropdown.find('a').on('click', function() {
+                    userDropdown.css('display', 'none');
+                });
+            } else {
+                // Người dùng chưa đăng nhập: hiển thị liên kết đăng nhập
+                loginLink.css('display', 'inline');
+                userName.css('display', 'none');
+                userDropdown.css('display', 'none');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Lỗi khi lấy dữ liệu người dùng:', status, error);
+            // Dự phòng: hiển thị liên kết đăng nhập
+            loginLink.css('display', 'inline');
+            userName.css('display', 'none');
+            userDropdown.css('display', 'none');
+        }
+    });
+});
+</script>
