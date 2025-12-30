@@ -7,8 +7,8 @@ import logging
 import os
 
 app = Flask(__name__)
-# Lấy Secret Key từ biến môi trường trên Render (nếu không có thì dùng mặc định để test local)
-app.secret_key = os.environ.get('SECRET_KEY', 'dev_secret_key_123')
+# Lấy Secret Key từ biến môi trường
+app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key_12345')
 
 # Thiết lập logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -17,18 +17,15 @@ logger = logging.getLogger(__name__)
 # Hàm tạo kết nối PostgreSQL
 def get_db_connection():
     try:
-        # Lấy đường dẫn Database từ biến môi trường của Render
         db_url = os.environ.get('DATABASE_URL')
         if not db_url:
-            raise ValueError("DATABASE_URL chưa được thiết lập trong Environment Variables!")
-            
-        conn = psycopg2.connect(db_url, cursor_factory=RealDictCursor)
-        return conn
+            raise ValueError("DATABASE_URL chưa được thiết lập!")
+        return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
     except Exception as err:
         logger.error(f"Database connection error: {err}")
         raise
 
-# Đóng kết nối an toàn
+# Đóng kết nối
 def close_db_connection(db, cursor=None):
     if cursor:
         cursor.close()
@@ -78,8 +75,8 @@ def login():
                 session['user_id'] = user['id']
                 session['full_name'] = user['full_name']
                 response = {
-                    'success': True, 
-                    'message': 'Login successful', 
+                    'success': True,
+                    'message': 'Login successful',
                     'redirect': url_for('index'),
                     'full_name': user['full_name']
                 }
@@ -88,7 +85,7 @@ def login():
             close_db_connection(db, cursor)
             return jsonify(response)
         except Exception as err:
-            logger.error(f"Error during login: {err}")
+            logger.error(f"Error login: {err}")
             return jsonify({'success': False, 'message': 'Server error'}), 500
     return render_template('login/login.html')
 
@@ -105,7 +102,6 @@ def register():
             db = get_db_connection()
             cursor = db.cursor()
             
-            # Kiểm tra trùng lặp trước khi insert để tránh lỗi database crash
             cursor.execute("SELECT id FROM users WHERE username = %s OR email = %s", (username, email))
             if cursor.fetchone():
                 close_db_connection(db, cursor)
@@ -117,10 +113,9 @@ def register():
             
             close_db_connection(db, cursor)
             return jsonify({'success': True, 'message': 'Registration successful! Please login.', 'redirect': url_for('login')})
-            
         except Exception as err:
-            logger.error(f"Error during registration: {err}")
-            return jsonify({'success': False, 'message': 'Database error'}), 500
+            logger.error(f"Error register: {err}")
+            return jsonify({'success': False, 'message': 'Server error'}), 500
     return render_template('login/register.html')
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
@@ -149,7 +144,7 @@ def forgot_password():
             close_db_connection(db, cursor)
             return jsonify(response)
         except Exception as err:
-            logger.error(f"Error reset password: {err}")
+            logger.error(f"Error forgot password: {err}")
             return jsonify({'success': False, 'message': 'Server error'}), 500
     return render_template('login/forgot_password.html')
 
@@ -168,16 +163,14 @@ def check_login():
 @app.route('/api/user')
 def get_user():
     if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'User not logged in'}), 401
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     try:
         db = get_db_connection()
         cursor = db.cursor()
         cursor.execute("SELECT id, username, email, full_name, birth_date FROM users WHERE id = %s", (session['user_id'],))
         user = cursor.fetchone()
         close_db_connection(db, cursor)
-        
         if user:
-            # Convert date to string for JSON
             user['birth_date'] = str(user['birth_date'])
             return jsonify(user)
         return jsonify({'success': False, 'message': 'User not found'}), 404
@@ -186,14 +179,18 @@ def get_user():
 
 @app.route('/api/update_user', methods=['POST'])
 def update_user():
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    if 'user_id' not in session: return jsonify({'success': False}), 401
     try:
         data = request.get_json()
         db = get_db_connection()
         cursor = db.cursor()
         
-        # Logic update giữ nguyên, chỉ thay đổi cú pháp execute nếu cần
+        # Kiểm tra email trùng (trừ chính user này)
+        cursor.execute("SELECT id FROM users WHERE email = %s AND id != %s", (data['email'], session['user_id']))
+        if cursor.fetchone():
+            close_db_connection(db, cursor)
+            return jsonify({'success': False, 'message': 'Email already exists'}), 400
+
         update_query = "UPDATE users SET full_name = %s, email = %s, birth_date = %s"
         update_values = [data['full_name'], data['email'], data['birth_date']]
         
@@ -211,7 +208,7 @@ def update_user():
         return jsonify({'success': True, 'message': 'Updated successfully'})
     except Exception as err:
         logger.error(f"Update error: {err}")
-        return jsonify({'success': False, 'message': 'Update failed'}), 500
+        return jsonify({'success': False, 'message': 'Server error'}), 500
 
 @app.route('/api/categories')
 def get_categories():
@@ -219,7 +216,7 @@ def get_categories():
         db = get_db_connection()
         cursor = db.cursor()
         cursor.execute("SELECT id, name, image_url FROM categories")
-        categories = cursor.fetchall()
+        categories = [{"id": row['id'], "name": row['name'], "image_url": row['image_url']} for row in cursor.fetchall()]
         close_db_connection(db, cursor)
         return jsonify(categories)
     except Exception as err:
@@ -230,40 +227,68 @@ def get_products():
     try:
         db = get_db_connection()
         cursor = db.cursor()
-        # Logic filter giữ nguyên, chỉ lưu ý cú pháp LIKE của Postgres tương tự MySQL
-        # ... (Phần xử lý query string giữ nguyên như cũ vì SQL chuẩn giống nhau) ...
-        
-        # Code rút gọn cho ví dụ, bạn hãy giữ nguyên logic filter dài trong file gốc của bạn
-        # Chỉ thay đổi đoạn thực thi query:
+        category_id = request.args.get('category_id')
+        search_query = request.args.get('search')
+        sort = request.args.get('sort', 'default')
+        price_range = request.args.get('price_range', None)
+        discount = request.args.get('discount', 'false') == 'true'
+
         query = """
             SELECT p.id, p.category_id, p.name, p.description, p.price, p.discount_percentage, p.discounted_price,
                    p.image_url, p.sold, p.stock_quantity, par.avg_rating, par.review_count
             FROM products p
             LEFT JOIN product_avg_rating par ON p.id = par.product_id
         """
-        # (Bạn copy lại toàn bộ logic filter WHERE/ORDER BY từ file cũ vào đây)
-        # Lưu ý: Postgres phân biệt hoa thường với LIKE, muốn không phân biệt dùng ILIKE
+        params = []
+        conditions = []
+
+        if category_id:
+            conditions.append("p.category_id = %s")
+            params.append(category_id)
+        if search_query:
+            conditions.append("p.name ILIKE %s") # Postgres dùng ILIKE để tìm kiếm không phân biệt hoa thường
+            params.append(f"%{search_query}%")
         
-        cursor.execute(query) # Thêm params nếu có
+        exchange_rate = 25000
+        if price_range:
+            ranges = price_range.split(',')
+            range_conditions = []
+            for r in ranges:
+                if '-' in r:
+                    min_v, max_v = map(float, r.split('-'))
+                    range_conditions.append(f"p.discounted_price BETWEEN {min_v/exchange_rate} AND {max_v/exchange_rate}")
+                elif r.endswith('+'):
+                    min_v = float(r[:-1])
+                    range_conditions.append(f"p.discounted_price >= {min_v/exchange_rate}")
+            if range_conditions:
+                conditions.append('(' + ' OR '.join(range_conditions) + ')')
+
+        if discount: conditions.append("p.discount_percentage > 0")
+        if conditions: query += " WHERE " + " AND ".join(conditions)
+
+        if sort == 'price_asc': query += " ORDER BY p.discounted_price ASC"
+        elif sort == 'price_desc': query += " ORDER BY p.discounted_price DESC"
+        elif sort == 'discount_desc': query += " ORDER BY p.discount_percentage DESC"
+        elif sort == 'rating_desc': query += " ORDER BY par.avg_rating DESC, par.review_count DESC"
+        elif sort == 'sold DESC': query += " ORDER BY p.sold DESC"
+        else: query += " ORDER BY p.id ASC"
+
+        cursor.execute(query, params)
         products = cursor.fetchall()
         
-        # Xử lý data trả về (Postgres trả về Decimal, cần float)
-        exchange_rate = 25000
         result = []
         for row in products:
-            row_dict = dict(row) # Copy dict
-            # Convert các trường Decimal sang float
-            for key in ['price', 'discounted_price', 'avg_rating', 'discount_percentage']:
-                if row_dict.get(key) is not None:
-                    row_dict[key] = float(row_dict[key])
+            item = dict(row)
+            # Chuyển đổi Decimal sang float nếu cần
+            for k in ['price', 'discounted_price', 'avg_rating', 'discount_percentage']:
+                if item.get(k) is not None: item[k] = float(item[k])
             
-            # Tính toán giá hiển thị
-            row_dict['price'] = row_dict['price'] * exchange_rate
-            row_dict['discounted_price'] = row_dict['discounted_price'] * exchange_rate
-            row_dict['student_price'] = row_dict['discounted_price'] * 0.95
-            row_dict['installment'] = "0% qua thẻ tín dụng..."
-            result.append(row_dict)
-            
+            item['price'] *= exchange_rate
+            item['discounted_price'] *= exchange_rate
+            item['student_price'] = item['discounted_price'] * 0.95
+            item['installment'] = "0% qua thẻ tín dụng..."
+            result.append(item)
+
         close_db_connection(db, cursor)
         return jsonify(result)
     except Exception as err:
@@ -275,31 +300,64 @@ def get_product(product_id):
     try:
         db = get_db_connection()
         cursor = db.cursor()
-        cursor.execute("SELECT * FROM products WHERE id = %s", (product_id,))
+        cursor.execute("""
+            SELECT p.id, p.category_id, p.name, p.description, p.price, p.discount_percentage, p.discounted_price,
+                   p.image_url, p.sold, p.stock_quantity, par.avg_rating, par.review_count
+            FROM products p
+            LEFT JOIN product_avg_rating par ON p.id = par.product_id
+            WHERE p.id = %s
+        """, (product_id,))
         product = cursor.fetchone()
         
         if product:
-            # Convert Decimal -> Float và tính giá VND
+            product = dict(product)
             exchange_rate = 25000
-            product['price'] = float(product['price']) * exchange_rate
-            product['discounted_price'] = float(product['discounted_price']) * exchange_rate
+            for k in ['price', 'discounted_price', 'avg_rating', 'discount_percentage']:
+                if product.get(k) is not None: product[k] = float(product[k])
             
-            # Lấy reviews
+            product['price'] *= exchange_rate
+            product['discounted_price'] *= exchange_rate
+            product['student_price'] = product['discounted_price'] * 0.95
+            
             cursor.execute("SELECT r.comment, u.full_name FROM reviews r JOIN users u ON r.user_id = u.id WHERE r.product_id = %s", (product_id,))
             product['reviews'] = [{"comment": r['comment'], "user_name": r['full_name']} for r in cursor.fetchall()]
             
             close_db_connection(db, cursor)
             return jsonify(product)
-        else:
-            close_db_connection(db, cursor)
-            return jsonify({'success': False, 'message': 'Not found'}), 404
+        close_db_connection(db, cursor)
+        return jsonify({'success': False, 'message': 'Not found'}), 404
+    except Exception as err:
+        return jsonify({'success': False, 'message': str(err)}), 500
+
+# Route này đã được khôi phục để sửa lỗi BuildError
+@app.route('/api/contact', methods=['POST'])
+def contact():
+    try:
+        # Xử lý form contact (Ví dụ lưu vào DB hoặc gửi email)
+        name = request.form.get('name')
+        logger.info(f"Contact received from {name}")
+        return jsonify({'success': True, 'message': 'Cảm ơn bạn đã liên hệ!'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 400
+
+@app.route('/api/reviews/add', methods=['POST'])
+def add_review():
+    if 'user_id' not in session: return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    try:
+        data = request.get_json()
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute("INSERT INTO reviews (user_id, product_id, comment, rating) VALUES (%s, %s, %s, %s)",
+                       (session['user_id'], data['product_id'], data['comment'], data['rating']))
+        db.commit()
+        close_db_connection(db, cursor)
+        return jsonify({'success': True})
     except Exception as err:
         return jsonify({'success': False, 'message': str(err)}), 500
 
 @app.route('/api/cart/add', methods=['POST'])
 def add_to_cart():
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Please log in'}), 401
+    if 'user_id' not in session: return jsonify({'success': False, 'message': 'Please log in'}), 401
     try:
         product_id = request.form['product_id']
         quantity = int(request.form['quantity'])
@@ -307,15 +365,13 @@ def add_to_cart():
         db = get_db_connection()
         cursor = db.cursor()
         
-        # Kiểm tra tồn kho
-        cursor.execute("SELECT stock_quantity FROM products WHERE id = %s", (product_id,))
+        cursor.execute("SELECT stock_quantity, discounted_price FROM products WHERE id = %s", (product_id,))
         prod = cursor.fetchone()
         if not prod or prod['stock_quantity'] < quantity:
             close_db_connection(db, cursor)
             return jsonify({'success': False, 'message': 'Out of stock'}), 400
 
-        # --- QUAN TRỌNG: Query này đã sửa cho Postgres ---
-        # Postgres dùng ON CONFLICT thay cho ON DUPLICATE KEY UPDATE
+        # Postgres ON CONFLICT
         query = """
             INSERT INTO cart (user_id, product_id, quantity) 
             VALUES (%s, %s, %s) 
@@ -325,45 +381,41 @@ def add_to_cart():
         cursor.execute(query, (session['user_id'], product_id, quantity))
         db.commit()
         
+        total = float(prod['discounted_price']) * quantity * 25000
         close_db_connection(db, cursor)
-        return jsonify({'success': True, 'message': 'Added to cart'})
+        return jsonify({'success': True, 'message': 'Added', 'total_price': total})
     except Exception as err:
-        logger.error(f"Add cart error: {err}")
+        logger.error(f"Cart add error: {err}")
         return jsonify({'success': False, 'message': 'Server error'}), 500
 
 @app.route('/api/cart', methods=['GET'])
 def get_cart():
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    if 'user_id' not in session: return jsonify({'success': False}), 401
     try:
         db = get_db_connection()
         cursor = db.cursor()
-        # Query cart giữ nguyên
         cursor.execute("""
             SELECT c.product_id, p.name, p.discounted_price, c.quantity, p.image_url
             FROM cart c JOIN products p ON c.product_id = p.id
             WHERE c.user_id = %s
         """, (session['user_id'],))
-        items = cursor.fetchall()
-        
+        items = []
+        total_cart = 0
         exchange_rate = 25000
-        result = []
-        total_cart_price = 0
-        for item in items:
+        for row in cursor.fetchall():
+            item = dict(row)
             item['price'] = float(item['discounted_price']) * exchange_rate
             item['total'] = item['price'] * item['quantity']
-            total_cart_price += item['total']
+            total_cart += item['total']
             item['selected'] = False
-            result.append(item)
-            
+            items.append(item)
         close_db_connection(db, cursor)
-        return jsonify({'success': True, 'items': result, 'total_cart_price': total_cart_price})
+        return jsonify({'success': True, 'items': items, 'total_cart_price': total_cart})
     except Exception as err:
         return jsonify({'success': False, 'message': str(err)}), 500
 
 @app.route('/api/cart/remove', methods=['POST'])
 def remove_from_cart():
-    # Logic remove giữ nguyên (chỉ thay đổi cursor/connection)
     if 'user_id' not in session: return jsonify({'success': False}), 401
     try:
         data = request.get_json()
@@ -377,22 +429,131 @@ def remove_from_cart():
 
 @app.route('/api/cart/checkout', methods=['POST'])
 def checkout_cart():
-    # Logic checkout cơ bản giữ nguyên
-    # Chỉ cần thay đổi cách connect db và bắt lỗi Exception chung
     if 'user_id' not in session: return jsonify({'success': False}), 401
     try:
-        # (Copy lại logic checkout của bạn vào đây)
-        # ...
-        # Thay cursor.execute(...) bằng code tương tự
+        data = request.get_json()
+        items = data.get('selected_items', [])
+        payment = data.get('payment_method')
         
-        return jsonify({'success': True, 'message': 'Checkout successful'})
+        db = get_db_connection()
+        cursor = db.cursor()
+        
+        for item in items:
+            pid = item['product_id']
+            qty = item['quantity']
+            cursor.execute("SELECT discounted_price FROM products WHERE id = %s", (pid,))
+            price = float(cursor.fetchone()['discounted_price']) * 25000 * qty
+            
+            cursor.execute("INSERT INTO order_activities (user_id, product_id, quantity, total_price, status) VALUES (%s, %s, %s, %s, %s)",
+                           (session['user_id'], pid, qty, price, 'Đang chờ giao'))
+            cursor.execute("UPDATE products SET stock_quantity = stock_quantity - %s, sold = sold + %s WHERE id = %s", (qty, qty, pid))
+            cursor.execute("DELETE FROM cart WHERE user_id = %s AND product_id = %s", (session['user_id'], pid))
+            
+        db.commit()
+        close_db_connection(db, cursor)
+        msg = 'Thanh toán thành công!' if payment != 'online' else 'Thanh toán online chưa hỗ trợ.'
+        return jsonify({'success': True, 'message': msg})
     except Exception as err:
         logger.error(f"Checkout error: {err}")
-        return jsonify({'success': False, 'message': 'Checkout failed'}), 500
+        return jsonify({'success': False, 'message': 'Server error'}), 500
 
-# ... Các route còn lại (contact, addresses) xử lý tương tự: 
-# Thay đổi get_db_connection() và catch Exception thay vì pymysql.Error
+@app.route('/api/user/profile')
+def get_user_profile():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+        
+        cursor.execute("SELECT username, email, full_name, birth_date FROM users WHERE id = %s", (session['user_id'],))
+        user = dict(cursor.fetchone())
+        user['birth_date'] = str(user['birth_date'])
+        
+        # Postgres trả về key là 'count' chữ thường (thay vì COUNT(*))
+        cursor.execute("SELECT COUNT(*) as count FROM cart WHERE user_id = %s", (session['user_id'],))
+        cart_count = cursor.fetchone()['count']
+        
+        cursor.execute("SELECT SUM(quantity) as total FROM order_activities WHERE user_id = %s", (session['user_id'],))
+        res = cursor.fetchone()
+        purchased_count = res['total'] if res and res['total'] else 0
+        
+        cursor.execute("SELECT * FROM order_activities WHERE user_id = %s", (session['user_id'],))
+        orders = []
+        for row in cursor.fetchall():
+            o = dict(row)
+            o['date'] = o['created_at'].strftime('%Y-%m-%d %H:%M')
+            orders.append(o)
+            
+        cursor.execute("SELECT COALESCE(SUM(total_price), 0) as spent FROM order_activities WHERE user_id = %s", (session['user_id'],))
+        total_spent = cursor.fetchone()['spent']
+        
+        cursor.execute("SELECT * FROM addresses WHERE user_id = %s", (session['user_id'],))
+        addresses = [dict(row) for row in cursor.fetchall()]
+        
+        data = {
+            'user_info': user,
+            'cart_count': cart_count,
+            'purchased_count': purchased_count,
+            'orders': orders,
+            'total_spent': total_spent,
+            'addresses': addresses
+        }
+        close_db_connection(db, cursor)
+        return jsonify({'success': True, 'data': data})
+    except Exception as err:
+        logger.error(f"Profile error: {err}")
+        return jsonify({'success': False}), 500
+
+@app.route('/api/user/addresses', methods=['GET'])
+def get_addresses():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM addresses WHERE user_id = %s", (session['user_id'],))
+        addresses = [dict(row) for row in cursor.fetchall()]
+        close_db_connection(db, cursor)
+        return jsonify({'success': True, 'data': {'addresses': addresses}})
+    except Exception: return jsonify({'success': False}), 500
+
+@app.route('/api/user/addresses/add', methods=['POST'])
+def add_address():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    try:
+        data = request.get_json()
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute("INSERT INTO addresses (user_id, address, city, postal_code, country) VALUES (%s, %s, %s, %s, %s)",
+                       (session['user_id'], data['address_line'], data['city'], data['postal_code'], data['country']))
+        db.commit()
+        close_db_connection(db, cursor)
+        return jsonify({'success': True})
+    except Exception: return jsonify({'success': False}), 500
+
+@app.route('/api/user/addresses/<int:address_id>/delete', methods=['POST'])
+def delete_address(address_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute("DELETE FROM addresses WHERE id = %s AND user_id = %s", (address_id, session['user_id']))
+        db.commit()
+        close_db_connection(db, cursor)
+        return jsonify({'success': True})
+    except Exception: return jsonify({'success': False}), 500
+
+@app.route('/api/user/addresses/<int:address_id>/edit', methods=['POST'])
+def edit_address(address_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    try:
+        data = request.get_json()
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute("UPDATE addresses SET address=%s, city=%s, postal_code=%s, country=%s WHERE id=%s AND user_id=%s",
+                       (data['address_line'], data['city'], data['postal_code'], data['country'], address_id, session['user_id']))
+        db.commit()
+        close_db_connection(db, cursor)
+        return jsonify({'success': True})
+    except Exception: return jsonify({'success': False}), 500
 
 if __name__ == '__main__':
-    # Khi chạy local, nó sẽ vẫn chạy được nếu bạn set biến môi trường DATABASE_URL trên máy bạn
     app.run(debug=True)
