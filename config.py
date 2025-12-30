@@ -22,9 +22,9 @@ def get_db_connection():
         return mysql.connector.connect(
             host=os.environ.get('MYSQLHOST', 'localhost'),
             user=os.environ.get('MYSQLUSER', 'root'),
-            password=os.environ.get('MYSQLPASSWORD', '123456'),
-            database=os.environ.get('MYSQLDATABASE', 'railway'),
-            port=int(os.environ.get('MYSQLPORT', 3306))
+            password=os.environ.get('MYSQLPASSWORD', 'H7team9090@'),
+            database=os.environ.get('MYSQLDATABASE', 'test'),
+            port=int(os.environ.get('MYSQLPORT', 4000))
         )
     except mysql.connector.Error as err:
         logger.error(f"Lỗi kết nối cơ sở dữ liệu: {err}")

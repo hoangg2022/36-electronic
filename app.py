@@ -16,10 +16,14 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 # Thiết lập cấu hình MySQL
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = os.environ.get('MYSQL_USER', 'root')  # Replace with your MySQL username
-app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_PASSWORD', '123456')  # Replace with your MySQL password
-app.config['MYSQL_DB'] = '36_electronic_shop'
+app.config['MYSQL_HOST'] = os.environ.get('MYSQLHOST', 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com')
+app.config['MYSQL_PORT'] = int(os.environ.get('MYSQLPORT', 4000))
+app.config['MYSQL_USER'] = os.environ.get('MYSQLUSER', '6kSJ9qn8Nkb2g3r.root')
+app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQLPASSWORD', 'FHvZQsNZ5uL1OtMs')
+app.config['MYSQL_DB'] = os.environ.get('MYSQLDATABASE', 'test')
+app.config['MYSQL_SSL_CA'] = os.environ.get('MYSQL_SSL_CA', '<CA_PATH>')
+app.config['MYSQL_SSL_VERIFY_CERT'] = True
+app.config['MYSQL_SSL_VERIFY_IDENTITY'] = True
 
 # Thiết lập logging để debug
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
