@@ -1,5 +1,3 @@
-# models/website_review.py
-import mysql.connector
 from datetime import datetime, timedelta
 from models.database import get_db_connection, close_db_connection
 import logging
@@ -26,16 +24,20 @@ class WebsiteReview:
                 (user_id, rating, comment)
             )
             last_review = cursor.fetchone()
-            if last_review and datetime.utcnow() - last_review[0].replace(tzinfo=None) < timedelta(seconds=1):
-                logger.warning("Duplicate review detected, skipping insertion")
-                return True  # Return success to avoid client retry
+            
+            # Sửa: last_review là dict nên dùng key 'created_at', không dùng index [0]
+            if last_review:
+                last_time = last_review['created_at']
+                if datetime.utcnow() - last_time.replace(tzinfo=None) < timedelta(seconds=1):
+                    logger.warning("Duplicate review detected, skipping insertion")
+                    return True
 
             query = "INSERT INTO website_reviews (user_id, rating, comment) VALUES (%s, %s, %s)"
             cursor.execute(query, (user_id, rating, comment))
             db.commit()
             logger.info(f"Review created for user_id: {user_id} with rating: {rating}")
             return True
-        except mysql.connector.Error as err:
+        except Exception as err:
             logger.error(f"Error creating review: {err}")
             db.rollback()
             return False
@@ -46,7 +48,8 @@ class WebsiteReview:
     def get_all_reviews():
         """Fetch all website reviews with user full_name."""
         db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
+        # Không truyền dictionary=True vì đã cấu hình RealDictCursor mặc định
+        cursor = db.cursor()
         try:
             query = """
                 SELECT wr.id, wr.rating, wr.comment, wr.created_at, u.full_name
@@ -63,7 +66,7 @@ class WebsiteReview:
                 'created_at': review['created_at'].isoformat() if review['created_at'] else None,
                 'full_name': review['full_name'] or 'Ẩn danh'
             } for review in reviews]
-        except mysql.connector.Error as err:
+        except Exception as err:
             logger.error(f"Error fetching reviews: {err}")
             return []
         finally:
