@@ -6,8 +6,9 @@ import logging
 product_bp = Blueprint('product', __name__)
 logger = logging.getLogger(__name__)
 
+# --- SỬA TÊN HÀM Ở DÒNG DƯỚI TỪ index() THÀNH products() ---
 @product_bp.route('/products')
-def index():
+def products():
     """Render trang danh sách sản phẩm (HTML)."""
     category_id = request.args.get('category')
     return render_template('products/products.html', category_id=category_id)
@@ -39,7 +40,6 @@ def get_products_api():
         processed_products = []
         for p in products:
             item = dict(p) # Copy dict
-            # Postgres trả về Decimal cho giá tiền, cần ép kiểu về float để JSON hiểu
             if item.get('price'): item['price'] = float(item['price'])
             if item.get('discount_percentage'): item['discount_percentage'] = float(item['discount_percentage'])
             if item.get('discounted_price'): item['discounted_price'] = float(item['discounted_price'])
@@ -59,7 +59,6 @@ def get_product_detail_api(product_id):
     try:
         product = Product.get_by_id(product_id)
         if product:
-            # Ép kiểu Decimal -> float
             if product.get('price'): product['price'] = float(product['price'])
             if product.get('discount_percentage'): product['discount_percentage'] = float(product['discount_percentage'])
             if product.get('discounted_price'): product['discounted_price'] = float(product['discounted_price'])
