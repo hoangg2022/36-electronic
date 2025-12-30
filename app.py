@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, jsonify, url_for, session, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
-import pymysql
 from datetime import datetime
 import logging
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import os
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Replace with a secure random key in production
@@ -14,15 +16,10 @@ logger = logging.getLogger(__name__)
 # Hàm tạo kết nối MySQL
 def get_db_connection():
     try:
-        return pymysql.connect(
-            host="localhost",
-            user="root",
-            password="123456",  # Secure this in production using environment variables
-            database="36_electronic_shop",
-            charset='utf8mb4',
-            cursorclass=pymysql.cursors.DictCursor
-        )
-    except pymysql.Error as err:
+        # Lấy URL từ biến môi trường của Render
+        conn = psycopg2.connect(os.environ.get('DATABASE_URL'), cursor_factory=RealDictCursor)
+        return conn
+    except Exception as err:
         logger.error(f"Database connection error: {err}")
         raise
 
@@ -88,7 +85,7 @@ def login():
                 logger.warning(f"Failed login attempt for username: {username}")
             close_db_connection(db, cursor)
             return jsonify(response)
-        except pymysql.Error as err:
+        except psycopg2.Error as err:
             logger.error(f"Database error during login: {err}")
             return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
         except KeyError as e:
@@ -126,7 +123,7 @@ def register():
         except KeyError as e:
             logger.error(f"Missing field in register request: {str(e)}")
             return jsonify({'success': False, 'message': f'Missing field: {str(e)}'}), 400
-        except pymysql.Error as err:
+        except psycopg2.Error as err:
             logger.error(f"Database error during registration: {err}")
             return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
     return render_template('login/register.html')
@@ -172,7 +169,7 @@ def forgot_password():
         except KeyError as e:
             logger.error(f"Missing field in forgot password request: {str(e)}")
             return jsonify({'success': False, 'message': f'Missing field: {str(e)}'}), 400
-        except pymysql.Error as err:
+        except psycopg2.Error as err:
             logger.error(f"Database error during password reset: {err}")
             return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
     return render_template('login/forgot_password.html')
@@ -218,7 +215,7 @@ def get_user():
             logger.warning(f"User not found for user_id: {session['user_id']}")
             close_db_connection(db, cursor)
             return jsonify({'success': False, 'message': 'User not found'}), 404
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in get_user: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
@@ -278,7 +275,7 @@ def update_user():
 
         close_db_connection(db, cursor)
         return jsonify({'success': True, 'message': 'User information updated successfully'})
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in update_user: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
@@ -295,7 +292,7 @@ def get_categories():
         categories = [{"id": row['id'], "name": row['name'], "image_url": row['image_url']} for row in cursor.fetchall()]
         close_db_connection(db, cursor)
         return jsonify(categories)
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in get_categories: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
@@ -396,7 +393,7 @@ def get_products():
         ]
         close_db_connection(db, cursor)
         return jsonify(result)
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in get_products: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
@@ -444,7 +441,7 @@ def get_product(product_id):
         logger.warning(f"Product not found: {product_id}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Product not found'}), 404
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in get_product: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
@@ -460,7 +457,7 @@ def contact():
     except KeyError as e:
         logger.error(f"Missing field in contact request: {str(e)}")
         return jsonify({'success': False, 'message': f'Missing field: {str(e)}'}), 400
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in contact: {err}")
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
 
@@ -514,7 +511,7 @@ def add_review():
     except (ValueError, TypeError) as e:
         logger.error(f"Invalid data in add_review: {str(e)}")
         return jsonify({'success': False, 'message': 'Dữ liệu không hợp lệ'}), 400
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in add_review: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Lỗi khi gửi đánh giá'}), 500
@@ -541,10 +538,12 @@ def add_to_cart():
             close_db_connection(db, cursor)
             return jsonify({'success': False, 'message': 'Insufficient stock'}), 400
 
-        cursor.execute(
-            "INSERT INTO cart (user_id, product_id, quantity) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE quantity = quantity + %s",
-            (session['user_id'], product_id, quantity, quantity)
-        )
+        cursor.execute("""
+            INSERT INTO cart (user_id, product_id, quantity) 
+            VALUES (%s, %s, %s) 
+            ON CONFLICT (user_id, product_id) 
+            DO UPDATE SET quantity = cart.quantity + EXCLUDED.quantity
+            """, (session['user_id'], product_id, quantity))
         db.commit()
 
         exchange_rate = 25000  # 1 USD = 25,000 VND
@@ -560,7 +559,7 @@ def add_to_cart():
     except ValueError:
         logger.error("Invalid quantity format in add_to_cart")
         return jsonify({'success': False, 'message': 'Invalid quantity'}), 400
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in add_to_cart: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
@@ -607,7 +606,7 @@ def get_cart():
             'items': items,
             'total_cart_price': total_cart_price
         })
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in get_cart: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
@@ -635,7 +634,7 @@ def remove_from_cart():
     except KeyError as e:
         logger.error(f"Missing field in remove_from_cart request: {str(e)}")
         return jsonify({'success': False, 'message': f'Missing field: {str(e)}'}), 400
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in remove_from_cart: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
@@ -722,7 +721,7 @@ def checkout_cart():
         logger.error(f"Missing field in checkout request: {str(e)}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': f'Missing field: {str(e)}'}), 400
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in checkout_cart: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
@@ -819,7 +818,7 @@ def get_user_profile():
 
         close_db_connection(db, cursor)
         return jsonify({'success': True, 'data': profile_data})
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in get_user_profile: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
@@ -849,7 +848,7 @@ def get_addresses():
         logger.info(f"Addresses fetched for user {session['user_id']}: {len(addresses)} addresses")
         close_db_connection(db, cursor)
         return jsonify({'success': True, 'data': {'addresses': addresses}})
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in get_addresses: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
@@ -881,7 +880,7 @@ def add_address():
         logger.info(f"Address added for user {session['user_id']}")
         close_db_connection(db, cursor)
         return jsonify({'success': True, 'message': 'Address added successfully'})
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in add_address: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
@@ -920,7 +919,7 @@ def edit_address(address_id):
         logger.info(f"Address {address_id} updated for user {session['user_id']}")
         close_db_connection(db, cursor)
         return jsonify({'success': True, 'message': 'Address updated successfully'})
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in edit_address: {err}")
         close_db_connection(db, cursor)
         return jsonify({'success': False, 'message': 'Database error, please try again later'}), 500
@@ -949,7 +948,7 @@ def delete_address(address_id):
         logger.info(f"Address {address_id} deleted for user {session['user_id']}")
         close_db_connection(db, cursor)
         return jsonify({'success': True, 'message': 'Address deleted successfully'})
-    except pymysql.Error as err:
+    except psycopg2.Error as err:
         logger.error(f"Database error in delete_address: {err}")
         close_db_connection(db, cursor)
         return jsonify_compare({'success': False, 'message': 'Database error'}, 500), 500
