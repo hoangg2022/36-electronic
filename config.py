@@ -1,7 +1,6 @@
-import os
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import mysql.connector
 import logging
+import os
 from werkzeug.utils import secure_filename
 
 # Thiết lập thư mục lưu trữ ảnh
@@ -20,21 +19,20 @@ logger = logging.getLogger(__name__)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Hàm tạo kết nối Database (Đã chuyển sang PostgreSQL)
+# Hàm tạo kết nối MySQL
 def get_db_connection():
     try:
-        # Lấy URL từ biến môi trường Render
-        db_url = os.environ.get('DATABASE_URL')
-        if not db_url:
-             raise ValueError("DATABASE_URL chưa được thiết lập!")
-             
-        # Kết nối Postgres
-        return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
-    except Exception as err:
+        return mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="123456",  # Bảo mật bằng biến môi trường trong production
+            database="36_electronic_shop"
+        )
+    except mysql.connector.Error as err:
         logger.error(f"Lỗi kết nối cơ sở dữ liệu: {err}")
         raise
 
-# Đóng kết nối an toàn
+# Đóng kết nối MySQL an toàn
 def close_db_connection(db, cursor=None):
     if cursor:
         cursor.close()

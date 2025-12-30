@@ -1,3 +1,4 @@
+# models/cart.py
 from .database import get_db_connection, close_db_connection
 import logging
 
@@ -9,16 +10,10 @@ class Cart:
         try:
             db = get_db_connection()
             cursor = db.cursor()
-            
-            # SỬA LẠI SQL CHO POSTGRESQL (Dùng ON CONFLICT)
-            query = """
-                INSERT INTO cart (user_id, product_id, quantity) 
-                VALUES (%s, %s, %s) 
-                ON CONFLICT (user_id, product_id) 
-                DO UPDATE SET quantity = cart.quantity + EXCLUDED.quantity
-            """
-            cursor.execute(query, (user_id, product_id, quantity))
-            
+            cursor.execute(
+                "INSERT INTO cart (user_id, product_id, quantity) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE quantity = quantity + %s",
+                (user_id, product_id, quantity, quantity)
+            )
             db.commit()
             close_db_connection(db, cursor)
             return True

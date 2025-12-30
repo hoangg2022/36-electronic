@@ -1,3 +1,4 @@
+# models/user.py
 from werkzeug.security import generate_password_hash, check_password_hash
 from .database import get_db_connection, close_db_connection
 import logging
@@ -10,11 +11,10 @@ class User:
         try:
             db = get_db_connection()
             cursor = db.cursor()
-            # Đảm bảo lấy đủ các cột cần thiết, đặc biệt là password và role
             cursor.execute("SELECT id, username, password, full_name, role FROM users WHERE username = %s", (username,))
             user = cursor.fetchone()
             close_db_connection(db, cursor)
-            return user 
+            return user
         except Exception as e:
             logger.error(f"Lỗi khi lấy người dùng theo username: {e}")
             return None
@@ -25,7 +25,7 @@ class User:
             db = get_db_connection()
             cursor = db.cursor()
             cursor.execute(
-                "SELECT id, username, email, full_name, birth_date, role FROM users WHERE id = %s",
+                "SELECT id, username, email, full_name, birth_date FROM users WHERE id = %s",
                 (user_id,)
             )
             user = cursor.fetchone()
@@ -64,7 +64,7 @@ class User:
             if password:
                 query += ", password = %s"
                 values.append(generate_password_hash(password))
-            if role and role in ['customer', 'admin']:
+            if role and role in ['customer', 'admin']:  # Validate role
                 query += ", role = %s"
                 values.append(role)
             query += " WHERE id = %s"
@@ -76,7 +76,6 @@ class User:
         except Exception as e:
             logger.error(f"Lỗi khi cập nhật người dùng: {e}")
             return False
-
     @staticmethod
     def delete(user_id):
         try:
@@ -89,6 +88,7 @@ class User:
         except Exception as e:
             logger.error(f"Lỗi khi xóa người dùng: {e}")
             return False
+
 
     @staticmethod
     def check_email_exists(email, exclude_user_id=None):
