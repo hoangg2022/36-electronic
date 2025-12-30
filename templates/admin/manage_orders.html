@@ -1,0 +1,147 @@
+{% extends "admin_layout.html" %}
+{% block content %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/manage_orders.css') }}">
+</head>
+
+<h1>Quản lý Đơn hàng</h1>
+
+<h2>Đơn hàng đang xử lý</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Người dùng</th>
+            <th>Sản phẩm</th>
+            <th>Số lượng</th>
+            <th>Tổng giá</th>
+            <th>Địa chỉ giao hàng</th>
+            <th>Số điện thoại</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody id="pendingOrderList"></tbody>
+</table>
+
+<h2>Lịch sử đơn hàng</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Người dùng</th>
+            <th>Sản phẩm</th>
+            <th>Số lượng</th>
+            <th>Tổng giá</th>
+            <th>Địa chỉ giao hàng</th>
+            <th>Số điện thoại</th>
+            <th>Trạng thái</th>
+            <th>Ngày giờ đã giao</th>
+        </tr>
+    </thead>
+    <tbody id="completedOrderList"></tbody>
+</table>
+
+<script>
+    // Lấy danh sách đơn hàng
+    fetch('/api/admin/orders')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const pendingOrderList = document.getElementById('pendingOrderList');
+                const completedOrderList = document.getElementById('completedOrderList');
+
+                // Hiển thị đơn hàng đang xử lý
+                data.pending_orders.forEach(order => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${order.id}</td>
+                        <td>${order.user_name}</td>
+                        <td>${order.product_name}</td>
+                        <td>${order.quantity}</td>
+                        <td>${order.total_price.toLocaleString('vi-VN')} VNĐ</td>
+                        <td>${order.address || 'Chưa có thông tin'}</td>
+                        <td>${order.phone || 'Chưa có thông tin'}</td>
+                        <td>
+                            <select onchange="updateOrderStatus(${order.id}, this.value)">
+                                <option value="Đang chờ giao" ${order.status === 'Đang chờ giao' ? 'selected' : ''}>Đang chờ giao</option>
+                                <option value="Đang giao" ${order.status === 'Đang giao' ? 'selected' : ''}>Đang giao</option>
+                                <option value="Đã giao" ${order.status === 'Đã giao' ? 'selected' : ''}>Đã giao</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button onclick="deleteOrder(${order.id})">Xóa</button>
+                        </td>
+                    `;
+                    pendingOrderList.appendChild(row);
+                });
+
+                // Hiển thị lịch sử đơn hàng (chỉ xem, không cho sửa/xóa)
+                data.completed_orders.forEach(order => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${order.id}</td>
+                        <td>${order.user_name}</td>
+                        <td>${order.product_name}</td>
+                        <td>${order.quantity}</td>
+                        <td>${order.total_price.toLocaleString('vi-VN')} VNĐ</td>
+                        <td>${order.address || 'Chưa có thông tin'}</td>
+                        <td>${order.phone || 'Chưa có thông tin'}</td>
+                        <td>${order.status}</td>
+                        <td>${order.delivered_at || 'N/A'}</td>
+                    `;
+                    completedOrderList.appendChild(row);
+                });
+            } else {
+                console.error('Lỗi khi lấy dữ liệu đơn hàng:', data.message);
+                alert('Không thể tải danh sách đơn hàng: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi gọi API:', error);
+            alert('Đã xảy ra lỗi khi tải danh sách đơn hàng. Vui lòng thử lại sau.');
+        });
+
+    // Cập nhật trạng thái đơn hàng
+    function updateOrderStatus(orderId, status) {
+        fetch(`/api/admin/update_order_status/${orderId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert('Cập nhật trạng thái thành công');
+                location.reload();
+            } else {
+                alert(result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi cập nhật trạng thái:', error);
+            alert('Đã xảy ra lỗi khi cập nhật trạng thái đơn hàng.');
+        });
+    }
+
+    // Xóa đơn hàng
+    function deleteOrder(orderId) {
+        if (confirm('Bạn có chắc muốn xóa đơn hàng này?')) {
+            fetch(`/api/admin/delete_order/${orderId}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert('Xóa đơn hàng thành công');
+                        location.reload();
+                    } else {
+                        alert(result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi xóa đơn hàng:', error);
+                    alert('Đã xảy ra lỗi khi xóa đơn hàng.');
+                });
+        }
+    }
+</script>
+{% endblock %}

@@ -10,6 +10,22 @@
         .product-section.hidden {
             display: none;
         }
+        .contact-section form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .contact-section select, 
+        .contact-section textarea {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #review-submit-message {
+            color: #28a745;
+            display: none;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -71,13 +87,20 @@
                 <div id="reviews"></div>
             </div>
             <div class="contact-section">
-                <h2>Liên hệ với chúng tôi</h2>
+                <h2>Gửi đánh giá về trang web</h2>
                 <form id="contact-form">
-                    <input type="text" id="name" placeholder="Họ và tên" required>
-                    <input type="email" id="email" placeholder="Email" required>
-                    <textarea id="message" placeholder="Tin nhắn" rows="5" required></textarea>
-                    <button type="submit">Gửi</button>
+                    <input type="hidden" id="userId" name="user_id">
+                    <select id="rating" name="rating" required>
+                        <option value="1">1 sao</option>
+                        <option value="2">2 sao</option>
+                        <option value="3">3 sao</option>
+                        <option value="4">4 sao</option>
+                        <option value="5" selected>5 sao</option>
+                    </select>
+                    <textarea id="message" name="comment" placeholder="Viết nhận xét của bạn..." rows="5" required></textarea>
+                    <button type="submit">Gửi đánh giá</button>
                 </form>
+                <div id="review-submit-message"></div>
             </div>
         </div>
     </div>

@@ -1,0 +1,76 @@
+{% extends "admin_layout.html" %}
+{% block content %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/dashboard.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<div class="dashboard-container">
+    <h1><i class="fas fa-chart-line"></i> Thống kê Dashboard</h1>
+    
+    <div class="stats-container">
+        <div class="stat-card">
+            <i class="fas fa-box stat-icon"></i>
+            <h3><i class="fas fa-cube"></i> Tổng Sản phẩm</h3>
+            <div class="stat-value" id="total_products">
+                <span class="stat-loading"></span>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <i class="fas fa-shopping-cart stat-icon"></i>
+            <h3><i class="fas fa-receipt"></i> Tổng Đơn hàng</h3>
+            <div class="stat-value" id="total_orders">
+                <span class="stat-loading"></span>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <i class="fas fa-dollar-sign stat-icon"></i>
+            <h3><i class="fas fa-money-bill-wave"></i> Doanh thu</h3>
+            <div class="stat-value" id="total_revenue">
+                <span class="stat-loading"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Function to update stat value and remove loading state
+    function updateStatValue(elementId, value, isRevenue = false) {
+        const element = document.getElementById(elementId);
+        const loadingSpan = element.querySelector('.stat-loading');
+        if (loadingSpan) loadingSpan.remove();
+        
+        if (isRevenue) {
+            const formattedValue = value.toLocaleString('vi-VN') + ' VNĐ';
+            element.textContent = formattedValue;
+            element.classList.remove('revenue-positive', 'revenue-negative');
+            if (value > 0) {
+                element.classList.add('revenue-positive');
+            } else if (value < 0) {
+                element.classList.add('revenue-negative');
+            }
+        } else {
+            element.textContent = value;
+        }
+    }
+
+    fetch('/api/admin/stats')
+        .then(response => response.json())
+        .then(data => {
+            updateStatValue('total_products', data.total_products);
+            updateStatValue('total_orders', data.total_orders);
+            updateStatValue('total_revenue', data.total_revenue, true);
+        })
+        .catch(error => {
+            console.error('Error fetching stats:', error);
+            ['total_products', 'total_orders', 'total_revenue'].forEach(id => {
+                const element = document.getElementById(id);
+                const loadingSpan = element.querySelector('.stat-loading');
+                if (loadingSpan) loadingSpan.remove();
+                element.innerHTML = '<span class="stat-error">Lỗi tải dữ liệu</span>';
+            });
+        });
+</script>
+{% endblock %}

@@ -1,103 +1,114 @@
--- Tạo cơ sở dữ liệu
+-- Tạo database và sử dụng
 CREATE DATABASE IF NOT EXISTS 36_electronic_shop;
 USE 36_electronic_shop;
 
--- Bảng users (Quản lý tài khoản người dùng)
+-- Bảng users (có cả thông tin role)
 CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    full_name VARCHAR(100) NOT NULL,
-    birth_date DATE NOT NULL,
-    total_purchased INT NOT NULL DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  full_name VARCHAR(100) NOT NULL,
+  birth_date DATE NOT NULL,
+  total_purchased INT NOT NULL DEFAULT 0,
+  role ENUM('customer', 'admin') NOT NULL DEFAULT 'customer',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Bảng addresses (Quản lý địa chỉ người dùng)
 CREATE TABLE IF NOT EXISTS addresses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    address VARCHAR(255) NOT NULL,
+    address_line VARCHAR(255) NOT NULL,
     city VARCHAR(100) NOT NULL,
-    postal_code VARCHAR(20) NOT NULL,
+    postal_code VARCHAR(20),
     country VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_default TINYINT(1) DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_user_id (user_id)
+);
+
+-- Bảng categories
+CREATE TABLE IF NOT EXISTS categories (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50) NOT NULL,
+  image_url VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Bảng products
+CREATE TABLE IF NOT EXISTS products (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  category_id INT NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  price DECIMAL(10,2) NOT NULL,
+  discount_percentage DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+  discounted_price DECIMAL(10,2) AS (price * (1 - discount_percentage/100)) STORED,
+  image_url VARCHAR(255) NOT NULL,
+  stock_quantity INT NOT NULL DEFAULT 0,
+  sold INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- Bảng reviews
+CREATE TABLE IF NOT EXISTS reviews (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  product_id INT NOT NULL,
+  comment TEXT NOT NULL,
+  rating TINYINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Bảng cart
+CREATE TABLE IF NOT EXISTS cart (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  product_id INT NOT NULL,
+  quantity INT NOT NULL CHECK (quantity >= 1),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_cart_item (user_id, product_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Bảng order_activities (có address & phone luôn)
+CREATE TABLE IF NOT EXISTS order_activities (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  product_id INT NOT NULL,
+  quantity INT NOT NULL CHECK (quantity >= 1),
+  total_price DECIMAL(15,2) NOT NULL,
+  status ENUM('Đang chờ giao', 'Đang giao', 'Đã giao') NOT NULL DEFAULT 'Đang chờ giao',
+  address VARCHAR(255),
+  phone VARCHAR(20),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  delivered_at TIMESTAMP NULL DEFAULT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+-- Bảng website_reviews (Đánh giá trang web)
+CREATE TABLE IF NOT EXISTS website_reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    rating TINYINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Bảng categories (Danh mục sản phẩm)
-CREATE TABLE IF NOT EXISTS categories (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    image_url VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Bảng products (Sản phẩm)
-CREATE TABLE IF NOT EXISTS products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    category_id INT NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    price DECIMAL(10, 2) NOT NULL,
-    discount_percentage DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
-    discounted_price DECIMAL(10, 2) GENERATED ALWAYS AS (
-        price * (1 - discount_percentage / 100)
-    ) STORED,
-    image_url VARCHAR(255) NOT NULL,
-    stock_quantity INT NOT NULL DEFAULT 0,
-    sold INT NOT NULL DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT ON UPDATE CASCADE
-);
-
--- Bảng reviews (Đánh giá khách hàng)
-CREATE TABLE IF NOT EXISTS reviews (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    product_id INT NOT NULL,
-    comment TEXT NOT NULL,
-    rating TINYINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- Bảng cart (Giỏ hàng của người dùng)
-CREATE TABLE IF NOT EXISTS cart (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    product_id INT NOT NULL,
-    quantity INT NOT NULL CHECK (quantity >= 1),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY unique_cart_item (user_id, product_id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- Bảng order_activities
-CREATE TABLE IF NOT EXISTS order_activities (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    product_id INT NOT NULL,
-    quantity INT NOT NULL CHECK (quantity >= 1),
-    total_price DECIMAL(15, 2) NOT NULL,
-    status ENUM('Đang chờ giao', 'Đang giao', 'Đã giao') NOT NULL DEFAULT 'Đang chờ giao',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- Tạo view để tính trung bình sao đánh giá và số lượng đánh giá
+-- View tổng hợp đánh giá
 CREATE VIEW product_avg_rating AS
-SELECT 
-    product_id,
-    ROUND(AVG(rating), 1) AS avg_rating,
-    COUNT(rating) AS review_count
+SELECT
+  product_id,
+  ROUND(AVG(rating),1) AS avg_rating,
+  COUNT(*) AS review_count
 FROM reviews
 GROUP BY product_id;
-
 -- Thêm dữ liệu mẫu
 -- Bảng users
 INSERT INTO users (username, email, password, full_name, birth_date, total_purchased) VALUES
@@ -107,11 +118,7 @@ INSERT INTO users (username, email, password, full_name, birth_date, total_purch
 ('phamvand', 'phamvand@example.com', '$2b$12$Kix2h0g8vN0vW1X9z2m2b.VW5J1vK8P0g9tL2X5vW3N6J9K8L2M5', 'Phạm Văn D', '1992-07-10', 4),
 ('hoangthie', 'hoangthie@example.com', '$2b$12$Kix2h0g8vN0vW1X9z2m2b.VW5J1vK8P0g9tL2X5vW3N6J9K8L2M5', 'Hoàng Thị E', '1997-11-25', 1);
 
--- Bảng addresses
-INSERT INTO addresses (user_id, address, city, postal_code, country) VALUES
-(1, '123 Đường Láng', 'Hà Nội', '100000', 'Việt Nam'),
-(1, '456 Nguyễn Trãi', 'Hà Nội', '100000', 'Việt Nam'),
-(2, '789 Lê Lợi', 'TP Hồ Chí Minh', '700000', 'Việt Nam');
+
 
 -- Bảng categories
 INSERT INTO categories (name, image_url) VALUES

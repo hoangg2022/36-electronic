@@ -1,0 +1,327 @@
+{% extends "admin_layout.html" %}
+{% block content %}
+<h1>Quản lý Người dùng</h1>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/manage_users.css') }}">
+</head>
+
+<button id="showAddUserForm" class="add-user-btn">Thêm Người dùng</button>
+
+<div id="addUserModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeAddModal()">×</span>
+        <h2>Thêm Người dùng</h2>
+        <div id="addErrorMessage" class="error-message"></div>
+        <form id="addUserForm">
+            <input type="text" name="username" placeholder="Tên đăng nhập" required><br>
+            <input type="email" name="email" placeholder="Email" required><br>
+            <input type="password" name="password" placeholder="Mật khẩu" required><br>
+            <input type="password" name="confirm_password" placeholder="Xác nhận mật khẩu" required><br>
+            <input type="text" name="full_name" placeholder="Họ và tên" required><br>
+            <input type="date" name="birth_date" required><br>
+            <select name="role" required>
+                <option value="customer">Khách hàng</option>
+                <option value="admin">Admin</option>
+            </select><br>
+            <button type="submit">Thêm Người dùng</button>
+        </form>
+    </div>
+</div>
+
+<h2>Danh sách Người dùng</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Tên</th>
+            <th>Email</th>
+            <th>Ngày sinh</th>
+            <th>Vai trò</th>
+            <th>Tổng chi tiêu</th>
+            <th>Số đơn hàng</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody id="userList"></tbody>
+</table>
+
+<div id="editUserModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeEditModal()">×</span>
+        <h3>Sửa Người dùng</h3>
+        <div id="editErrorMessage" class="error-message"></div>
+        <form id="editUserForm">
+            <input type="hidden" name="user_id">
+            <input type="text" name="full_name" placeholder="Họ và tên" required><br>
+            <input type="email" name="email" placeholder="Email" required><br>
+            <input type="password" name="password" placeholder="Mật khẩu mới (để trống nếu không đổi)"><br>
+            <input type="password" name="confirm_password" placeholder="Xác nhận mật khẩu mới"><br>
+            <input type="date" name="birth_date"><br>
+            <select name="role" required>
+                <option value="customer">Khách hàng</option>
+                <option value="admin">Admin</option>
+            </select><br>
+            <button type="submit">Cập nhật Người dùng</button>
+        </form>
+    </div>
+</div>
+
+<script>
+// Thêm style cho nút thêm người dùng
+const style = document.createElement('style');
+style.textContent = `
+    .add-user-btn {
+        background: linear-gradient(135deg, #4a90e2, #f4b678);
+        color: #fff;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1.1em;
+        font-weight: 600;
+        transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+        display: block;
+        margin: 20px auto;
+    }
+    .add-user-btn:hover {
+        background: linear-gradient(135deg, #6bb5ff, #f7c894);
+        transform: scale(1.05);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+`;
+document.head.appendChild(style);
+
+function validatePassword(password) {
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const isLongEnough = password.length >= 8;
+    
+    return hasUpperCase && hasLowerCase && hasNumber && isLongEnough;
+}
+
+function normalizeDate(dateString) {
+    if (!dateString || dateString === 'undefined') return '';
+    const mmddyyyyRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+    if (mmddyyyyRegex.test(dateString)) {
+        const [, month, day, year] = dateString.match(mmddyyyyRegex);
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+    const yyyymmddRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (yyyymmddRegex.test(dateString)) {
+        const date = new Date(dateString);
+        return date instanceof Date && !isNaN(date) ? dateString : '';
+    }
+    return '';
+}
+
+function isValidDate(dateString) {
+    if (!dateString || dateString === 'undefined') return false;
+    const yyyymmddRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!yyyymmddRegex.test(dateString)) return false;
+    const date = new Date(dateString);
+    return date instanceof Date && !isNaN(date);
+}
+
+// Hiển thị modal thêm người dùng
+document.getElementById('showAddUserForm').addEventListener('click', function() {
+    document.getElementById('addUserModal').style.display = 'flex';
+    document.getElementById('addErrorMessage').style.display = 'none';
+    document.getElementById('addUserForm').reset();
+});
+
+// Đóng modal thêm người dùng
+function closeAddModal() {
+    document.getElementById('addUserModal').style.display = 'none';
+}
+
+fetch('/api/admin/users')
+    .then(response => response.json())
+    .then(users => {
+        const userList = document.getElementById('userList');
+        users.forEach(user => {
+            let row = document.createElement('tr');
+            const normalizedBirthDate = normalizeDate(user.birth_date);
+            row.innerHTML = `
+                <td>${user.full_name}</td>
+                <td>${user.email}</td>
+                <td>${normalizedBirthDate || 'Chưa có'}</td>
+                <td>${user.role}</td>
+                <td>${user.total_spent.toLocaleString('vi-VN')} VNĐ</td>
+                <td>${user.order_count}</td>
+                <td>
+                    <button onclick="editUser(${user.id}, '${user.full_name}', '${user.email}', '${user.birth_date}', '${user.role}')">Sửa</button>
+                    <button onclick="deleteUser(${user.id})">Xóa</button>
+                </td>
+            `;
+            userList.appendChild(row);
+        });
+    })
+    .catch(error => {
+        console.error('Lỗi khi lấy danh sách người dùng:', error);
+        document.getElementById('addErrorMessage').textContent = 'Không thể tải danh sách người dùng';
+        document.getElementById('addErrorMessage').style.display = 'block';
+    });
+
+document.getElementById('addUserForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const errorMessage = document.getElementById('addErrorMessage');
+    errorMessage.style.display = 'none';
+
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+
+    if (data.password !== data.confirm_password) {
+        errorMessage.textContent = 'Mật khẩu và xác nhận mật khẩu không khớp';
+        errorMessage.style.display = 'block';
+        return;
+    }
+
+    const passwordValidationResult = validatePassword(data.password);
+    if (!passwordValidationResult) {
+        errorMessage.textContent = 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số';
+        errorMessage.style.display = 'block';
+        return;
+    }
+
+    fetch('/api/admin/add_user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('Thêm người dùng thành công');
+            location.reload();
+        } else {
+            errorMessage.textContent = result.message;
+            errorMessage.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Lỗi khi thêm người dùng:', error);
+        errorMessage.textContent = 'Lỗi hệ thống, vui lòng thử lại sau';
+        errorMessage.style.display = 'block';
+    });
+});
+
+function deleteUser(userId) {
+    if (confirm('Bạn có chắc muốn xóa người dùng này?')) {
+        fetch(`/api/admin/delete_user/${userId}`, { method: 'DELETE' })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('Xóa người dùng thành công');
+                    location.reload();
+                } else {
+                    document.getElementById('addErrorMessage').textContent = result.message;
+                    document.getElementById('addErrorMessage').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi khi xóa người dùng:', error);
+                document.getElementById('addErrorMessage').textContent = 'Lỗi hệ thống, vui lòng thử lại sau';
+                document.getElementById('addErrorMessage').style.display = 'block';
+            });
+    }
+}
+
+function editUser(userId, fullName, email, birthDate, role) {
+    const modal = document.getElementById('editUserModal');
+    const form = document.getElementById('editUserForm');
+    const errorMessage = document.getElementById('editErrorMessage');
+    errorMessage.style.display = 'none';
+
+    form.querySelector('[name="user_id"]').value = userId;
+    form.querySelector('[name="full_name"]').value = fullName;
+    form.querySelector('[name="email"]').value = email;
+    const birthDateInput = form.querySelector('[name="birth_date"]');
+    const normalizedBirthDate = normalizeDate(birthDate);
+    birthDateInput.value = normalizedBirthDate;
+    const roleSelect = form.querySelector('[name="role"]');
+    const normalizedRole = role.toLowerCase();
+    roleSelect.value = normalizedRole;
+    form.querySelector('[name="password"]').value = '';
+    form.querySelector('[name="confirm_password"]').value = '';
+    birthDateInput.dataset.original = normalizedBirthDate;
+    modal.style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('editUserModal').style.display = 'none';
+}
+
+document.getElementById('editUserForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const errorMessage = document.getElementById('editErrorMessage');
+    errorMessage.style.display = 'none';
+
+    const formData = new FormData(this);
+    let data = Object.fromEntries(formData);
+
+    if (!data.user_id) {
+        errorMessage.textContent = 'Không tìm thấy ID người dùng';
+        errorMessage.style.display = 'block';
+        return;
+    }
+
+    const originalBirthDate = this.querySelector('[name="birth_date"]').dataset.original;
+    if (!data.birth_date || data.birth_date === 'undefined' || !isValidDate(data.birth_date)) {
+        if (isValidDate(originalBirthDate)) {
+            data.birth_date = originalBirthDate;
+        } else {
+            delete data.birth_date;
+        }
+    }
+
+    if (data.password && data.password !== data.confirm_password) {
+        errorMessage.textContent = 'Mật khẩu và xác nhận mật khẩu không khớp';
+        errorMessage.style.display = 'block';
+        return;
+    }
+
+    if (data.password && !validatePassword(data.password)) {
+        errorMessage.textContent = 'Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số';
+        errorMessage.style.display = 'block';
+        return;
+    }
+
+    fetch(`/api/admin/update_user/${data.user_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(result => {
+            if (result.success) {
+                alert('Cập nhật người dùng thành công');
+                location.reload();
+            } else {
+                errorMessage.textContent = result.message;
+                errorMessage.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi cập nhật người dùng:', error);
+            errorMessage.textContent = 'Lỗi hệ thống, vui lòng thử lại sau';
+            errorMessage.style.display = 'block';
+        });
+});
+
+window.onclick = function(event) {
+    const addModal = document.getElementById('addUserModal');
+    const editModal = document.getElementById('editUserModal');
+    if (event.target === addModal) {
+        closeAddModal();
+    }
+    if (event.target === editModal) {
+        closeEditModal();
+    }
+};
+</script>
+{% endblock %}

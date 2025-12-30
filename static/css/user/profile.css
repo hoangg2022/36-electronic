@@ -1,0 +1,252 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #f0f4ff, #e6f0fa);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-top: 120px;
+}
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    flex: 1;
+}
+h2 {
+    text-align: center;
+    color: #2c3e50;
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
+    margin-bottom: 1.5rem;
+}
+.nav-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.nav-tabs a {
+    padding: 1rem 2rem;
+    color: #2c3e50;
+    text-decoration: none;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.nav-tabs a.active {
+    background: #3498db;
+    color: #fff;
+    border-radius: 5px;
+}
+.tab-content {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+.form-group {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+.form-group input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+}
+.form-group button {
+    background: #3498db;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 0.5rem;
+    align-self: flex-start;
+}
+.form-group button:hover {
+    background: #2980b9;
+}
+
+/* Phần wrapper cho bảng */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+}
+
+/* Kiểu dáng cho bảng đơn hàng và địa chỉ */
+.order-table, .address-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    min-width: 600px;
+}
+
+.order-table th, .order-table td, 
+.address-table th, .address-table td {
+    padding: 0.8rem;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.order-table th, .address-table th {
+    background: #3498db;
+    color: #fff;
+    position: sticky;
+    top: 0;
+}
+
+.address-actions {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.stats {
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    color: #2c3e50;
+    width: 100%;
+}
+.address-actions button {
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 0.5rem;
+}
+.address-actions button.edit-btn {
+    background: #3498db;
+}
+.address-actions button.edit-btn:hover {
+    background: #2980b9;
+}
+.address-actions button:hover {
+    background: #c0392b;
+}
+
+/* Điều chỉnh cho màn hình tablet */
+@media (max-width: 768px) {
+    body { 
+        padding-top: 100px; 
+    }
+    .nav-tabs {
+        flex-direction: column;
+        align-items: center;
+    }
+    .nav-tabs a {
+        padding: 0.8rem 1.5rem;
+        margin-bottom: 0.5rem;
+        width: 90%;
+        text-align: center;
+    }
+    .tab-content {
+        padding: 1.5rem;
+    }
+    
+    /* Kiểu dáng bảng cho tablet */
+    .order-table, .address-table {
+        display: block;
+        min-width: unset;
+    }
+    
+    .order-table thead, .address-table thead {
+        display: none;
+    }
+    
+    .order-table tbody, .address-table tbody,
+    .order-table tr, .address-table tr,
+    .order-table td, .address-table td {
+        display: block;
+        width: 100%;
+    }
+    
+    .order-table tr, .address-table tr {
+        margin-bottom: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 0.5rem;
+    }
+    
+    .order-table td, .address-table td {
+        padding: 0.5rem;
+        border: none;
+        position: relative;
+        padding-left: 40%;
+    }
+    
+    .order-table td:before, .address-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0.5rem;
+        top: 0.5rem;
+        width: 35%;
+        font-weight: bold;
+    }
+    
+    .address-actions {
+        padding-left: 0;
+    }
+    
+    .address-actions:before {
+        display: none;
+    }
+    
+    .address-actions button {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}
+
+/* Điều chỉnh cho màn hình điện thoại */
+@media (max-width: 480px) {
+    body { 
+        padding-top: 120px; 
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
+    .tab-content {
+        padding: 1rem;
+    }
+    .form-group label {
+        font-size: 0.9rem;
+    }
+    .form-group input {
+        padding: 0.4rem;
+        font-size: 0.9rem;
+    }
+    .form-group button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Kiểu dáng bảng cho điện thoại */
+    .order-table td, .address-table td {
+        padding-left: 35%;
+        font-size: 0.9rem;
+    }
+    
+    .order-table td:before, .address-table td:before {
+        font-size: 0.85rem;
+        width: 30%;
+    }
+}

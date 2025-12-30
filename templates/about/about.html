@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giới thiệu - 36 Electronic Shop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/about/about.css') }}">
+    <style>
+        .product-section.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Placeholder -->
+    {% include 'header/header.html' %}      
+
+    <!-- About Section -->
+    <main>
+        <section class="about-section">
+            <div class="container">
+                <h2>Giới thiệu về 36 Electronic Shop</h2>
+                <p>Chào mừng bạn đến với 36 Electronic Shop, cửa hàng điện tử hàng đầu tại TP. HCM! Chúng tôi tự hào là điểm đến đáng tin cậy cho các sản phẩm công nghệ tiên tiến, từ điện thoại thông minh, tai nghe không dây, đến các dòng loa chất lượng cao, đáp ứng mọi nhu cầu của bạn.</p>
+                <p>Với hơn một thập kỷ kinh nghiệm trong ngành, 36 Electronic Shop cam kết mang đến sản phẩm chính hãng, dịch vụ khách hàng tận tâm, và giá cả cạnh tranh. Chúng tôi không chỉ bán sản phẩm, mà còn mang đến trải nghiệm công nghệ đỉnh cao cho mọi khách hàng.</p>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section class="history-section">
+            <div class="container">
+                <h3>Lịch sử hình thành</h3>
+                <p>Được thành lập vào năm 2015, 36 Electronic Shop bắt đầu như một cửa hàng nhỏ tại TP. HCM, với sứ mệnh mang công nghệ đến gần hơn với người tiêu dùng Việt Nam. Qua 10 năm phát triển, chúng tôi đã mở rộng quy mô, trở thành đối tác chính thức của các thương hiệu hàng đầu thế giới như Apple, Samsung, Asus, Sony, và nhiều hãng khác.</p>
+                <p>Từ những ngày đầu, chúng tôi luôn đặt khách hàng làm trung tâm, không ngừng cải tiến để cung cấp các sản phẩm mới nhất và dịch vụ hậu mãi xuất sắc. Hiện nay, 36 Electronic Shop đã trở thành cái tên quen thuộc với hàng ngàn khách hàng trên khắp cả nước.</p>
+            </div>
+        </section>
+
+        <!-- Partners Section -->
+        <section class="partners-section">
+            <div class="container">
+                <h3>Đối tác thương hiệu</h3>
+                <div class="partners-grid">
+                    <div class="partner-logo">
+                        <img src="{{ url_for('static', filename='img/apple.jpg') }}" alt="Apple">
+                    </div>
+                    <div class="partner-logo">
+                        <img src="{{ url_for('static', filename='img/samsung.jpg') }}" alt="Samsung">
+                    </div>
+                    <div class="partner-logo">
+                        <img src="{{ url_for('static', filename='img/asus.jpg') }}" alt="Asus">
+                    </div>
+                    <div class="partner-logo">
+                        <img src="{{ url_for('static', filename='img/sony.jpeg') }}" alt="Sony">
+                    </div>
+                    <div class="partner-logo">
+                        <img src="{{ url_for('static', filename='img/xiaomi.jpg') }}" alt="Xiaomi">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Values Section -->
+        <section class="values-section">
+            <div class="container">
+                <h3>Giá trị cốt lõi</h3>
+                <div class="values-grid">
+                    <div class="value-item">
+                        <h4>Chất lượng hàng đầu</h4>
+                        <p>Chúng tôi chỉ cung cấp các sản phẩm chính hãng từ các thương hiệu uy tín, đảm bảo chất lượng và độ bền vượt trội.</p>
+                    </div>
+                    <div class="value-item">
+                        <h4>Dịch vụ tận tâm</h4>
+                        <p>Đội ngũ hỗ trợ của chúng tôi luôn sẵn sàng giải đáp mọi thắc mắc và cung cấp dịch vụ hậu mãi tốt nhất.</p>
+                    </div>
+                    <div class="value-item">
+                        <h4>Đổi mới không ngừng</h4>
+                        <p>Chúng tôi luôn cập nhật các xu hướng công nghệ mới nhất để mang đến cho khách hàng những trải nghiệm tiên tiến.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="container">
+                <h3>Khám phá công nghệ cùng 36 Electronic Shop!</h3>
+                <a href="{{ url_for('index') }}">Xem sản phẩm ngay</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Placeholder -->
+    {% include 'footer/footer.html' %}
+
+    <!-- Script to load header and footer -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="{{ url_for('static', filename='js/about/about.jsjs') }}"></script>
+</body>
+</html>

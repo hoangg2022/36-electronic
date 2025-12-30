@@ -1,0 +1,206 @@
+/* Dashboard Statistics Styling */
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+.dashboard-container h1 {
+    color: #4a90e2;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-align: center;
+    background: linear-gradient(135deg, #4a90e2, #f4b678);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Statistics Cards Container */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+/* Individual Stat Cards */
+.stat-card {
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 8px 25px rgba(74, 144, 226, 0.1);
+    border: 1px solid rgba(74, 144, 226, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #4a90e2, #f4b678);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(74, 144, 226, 0.2);
+    border-color: #4a90e2;
+}
+
+.stat-card h3 {
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-card h3::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4a90e2, #f4b678);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #4a90e2, #f4b678);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-top: 0.5rem;
+}
+
+/* Specific styling for different stat types */
+.stat-card:nth-child(1) .stat-value {
+    background: linear-gradient(135deg, #4a90e2, #6bb5ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card:nth-child(2) .stat-value {
+    background: linear-gradient(135deg, #f4b678, #ffce85);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card:nth-child(3) .stat-value {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Loading animation */
+.stat-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #4a90e2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Icons for each stat card */
+.stat-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 2rem;
+    opacity: 0.1;
+    color: #4a90e2;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1rem;
+    }
+    
+    .dashboard-container h1 {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .stat-card {
+        padding: 1.5rem;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-container h1 {
+        font-size: 1.8rem;
+    }
+    
+    .stat-card h3 {
+        font-size: 1.1rem;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+    }
+}
+
+/* Animation for when stats load */
+.stat-card {
+    opacity: 0;
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Error state styling */
+.stat-error {
+    color: #e63946;
+    font-style: italic;
+}
+
+/* Success state for revenue */
+.revenue-positive {
+    color: #28a745;
+}
+
+.revenue-negative {
+    color: #e63946;
+}

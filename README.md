@@ -1,2 +1,0 @@
-# 36-electronic
-# deloy

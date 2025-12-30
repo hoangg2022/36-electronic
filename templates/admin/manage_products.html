@@ -1,0 +1,343 @@
+{% extends "admin_layout.html" %}
+{% block content %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/manage_products.css') }}">
+</head>
+<h1>Quản lý Sản phẩm</h1>
+
+<button id="showAddProductForm" class="add-product-btn">Thêm Sản phẩm</button>
+
+<div id="addProductModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeAddModal()">×</span>
+        <h2>Thêm Sản phẩm</h2>
+        <div id="addErrorMessage" class="error-message"></div>
+        <form id="addProductForm" enctype="multipart/form-data">
+            <div>
+                <label for="name">Tên sản phẩm:</label>
+                <input type="text" id="name" name="name" placeholder="Tên sản phẩm" required>
+            </div>
+            <div>
+                <label for="category_id">ID Danh mục:</label>
+                <input type="number" id="category_id" name="category_id" placeholder="ID Danh mục" required>
+            </div>
+            <div>
+                <label for="description">Mô tả:</label>
+                <textarea id="description" name="description" placeholder="Mô tả" required></textarea>
+            </div>
+            <div>
+                <label for="price">Giá (USD):</label>
+                <input type="number" id="price" name="price" placeholder="Giá (USD)" step="0.01" required>
+            </div>
+            <div>
+                <label for="discount_percentage">Phần trăm giảm giá:</label>
+                <input type="number" id="discount_percentage" name="discount_percentage" placeholder="Phần trăm giảm giá" step="0.01" required>
+            </div>
+            <div>
+                <label for="image">Hình ảnh sản phẩm:</label>
+                <input type="file" id="image" name="image" accept="image/*" required>
+            </div>
+            <div>
+                <label for="stock_quantity">Số lượng tồn kho:</label>
+                <input type="number" id="stock_quantity" name="stock_quantity" placeholder="Số lượng tồn kho" required>
+            </div>
+            <button type="submit">Thêm Sản phẩm</button>
+        </form>
+    </div>
+</div>
+
+<div id="editProductModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeEditModal()">×</span>
+        <h2>Sửa Sản phẩm</h2>
+        <div id="editErrorMessage" class="error-message"></div>
+        <form id="editProductForm" enctype="multipart/form-data">
+            <input type="hidden" id="edit_product_id" name="product_id">
+            <div>
+                <label for="edit_name">Tên sản phẩm:</label>
+                <input type="text" id="edit_name" name="name" placeholder="Tên sản phẩm" required>
+            </div>
+            <div>
+                <label for="edit_category_id">ID Danh mục:</label>
+                <input type="number" id="edit_category_id" name="category_id" placeholder="ID Danh mục" required>
+            </div>
+            <div>
+                <label for="edit_description">Mô tả:</label>
+                <textarea id="edit_description" name="description" placeholder="Mô tả" required></textarea>
+            </div>
+            <div>
+                <label for="edit_price">Giá (USD):</label>
+                <input type="number" id="edit_price" name="price" placeholder="Giá (USD)" step="0.01" required>
+            </div>
+            <div>
+                <label for="edit_discount_percentage">Phần trăm giảm giá:</label>
+                <input type="number" id="edit_discount_percentage" name="discount_percentage" placeholder="Phần trăm giảm giá" step="0.01" required>
+            </div>
+            <div>
+                <label for="edit_image">Hình ảnh sản phẩm:</label>
+                <input type="file" id="edit_image" name="image" accept="image/*">
+                <input type="hidden" id="edit_image_url" name="image_url">
+            </div>
+            <div>
+                <label for="edit_stock_quantity">Số lượng tồn kho:</label>
+                <input type="number" id="edit_stock_quantity" name="stock_quantity" placeholder="Số lượng tồn kho" required>
+            </div>
+            <button type="submit">Cập nhật Sản phẩm</button>
+            <button type="button" onclick="closeEditModal()">Hủy</button>
+        </form>
+    </div>
+</div>
+
+<h2>Danh sách Sản phẩm</h2>
+<div style="margin-bottom: 10px; text-align: center;">
+    <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên sản phẩm">
+    <select id="sortSelect">
+        <option value="name_asc">Tên (A-Z)</option>
+        <option value="name_desc">Tên (Z-A)</option>
+        <option value="category_asc">Danh mục (A-Z)</option>
+        <option value="category_desc">Danh mục (Z-A)</option>
+        <option value="price_asc">Giá (Thấp-Cao)</option>
+        <option value="price_desc">Giá (Cao-Thấp)</option>
+        <option value="discount_asc">Giảm giá (Thấp-Cao)</option>
+        <option value="discount_desc">Giảm giá (Cao-Thấp)</option>
+        <option value="stock_asc">Tồn kho (Thấp-Cao)</option>
+        <option value="stock_desc">Tồn kho (Cao-Thấp)</option>
+        <option value="sold_asc">Đã bán (Thấp-Cao)</option>
+        <option value="sold_desc">Đã bán (Cao-Thấp)</option>
+    </select>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>Tên</th>
+            <th>Danh mục</th>
+            <th>Giá</th>
+            <th>Giảm giá</th>
+            <th>Tồn kho</th>
+            <th>Đã bán</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody id="productList"></tbody>
+</table>
+
+<script>
+    let products = [];
+    
+    // Hàm tải và hiển thị danh sách sản phẩm
+    function loadProducts(search = '', sort = 'name_asc') {
+        fetch('/api/admin/products?search=' + encodeURIComponent(search) + '&sort=' + encodeURIComponent(sort))
+            .then(response => response.json())
+            .then(data => {
+                products = data;
+                filterAndSortProducts(search, sort);
+            });
+    }
+
+    // Hàm lọc và sắp xếp sản phẩm
+    function filterAndSortProducts(search, sort) {
+        let filteredProducts = products.filter(product => 
+            product.name.toLowerCase().includes(search.toLowerCase())
+        );
+
+        filteredProducts.sort((a, b) => {
+            switch(sort) {
+                case 'name_asc':
+                    return a.name.localeCompare(b.name);
+                case 'name_desc':
+                    return b.name.localeCompare(a.name);
+                case 'category_asc':
+                    return a.category_name.localeCompare(b.category_name);
+                case 'category_desc':
+                    return b.category_name.localeCompare(a.category_name);
+                case 'price_asc':
+                    return a.price - b.price;
+                case 'price_desc':
+                    return b.price - a.price;
+                case 'discount_asc':
+                    return a.discount_percentage - b.discount_percentage;
+                case 'discount_desc':
+                    return b.discount_percentage - a.discount_percentage;
+                case 'stock_asc':
+                    return a.stock_quantity - b.stock_quantity;
+                case 'stock_desc':
+                    return b.stock_quantity - a.stock_quantity;
+                case 'sold_asc':
+                    return a.sold - b.sold;
+                case 'sold_desc':
+                    return b.sold - a.sold;
+                default:
+                    return 0;
+            }
+        });
+
+        const productList = document.getElementById('productList');
+        productList.innerHTML = '';
+        filteredProducts.forEach(product => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${product.name}</td>
+                <td>${product.category_name}</td>
+                <td>${product.price.toLocaleString('vi-VN')} VNĐ</td>
+                <td>${product.discount_percentage}%</td>
+                <td>${product.stock_quantity}</td>
+                <td>${product.sold}</td>
+                <td>
+                    <button onclick="editProduct(${product.id})">Sửa</button>
+                    <button onclick="deleteProduct(${product.id})">Xóa</button>
+                </td>
+            `;
+            productList.appendChild(row);
+        });
+    }
+
+    // Hiển thị modal thêm sản phẩm
+    document.getElementById('showAddProductForm').addEventListener('click', function() {
+        document.getElementById('addProductModal').style.display = 'flex';
+        document.getElementById('addErrorMessage').style.display = 'none';
+        document.getElementById('addProductForm').reset();
+    });
+
+    // Đóng modal thêm sản phẩm
+    function closeAddModal() {
+        document.getElementById('addProductModal').style.display = 'none';
+    }
+
+    // Đóng modal sửa sản phẩm
+    function closeEditModal() {
+        document.getElementById('editProductModal').style.display = 'none';
+    }
+
+    // Tải danh sách sản phẩm khi trang được tải
+    document.addEventListener('DOMContentLoaded', () => {
+        loadProducts();
+        
+        // Xử lý tìm kiếm
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const search = this.value;
+            const sort = document.getElementById('sortSelect').value;
+            filterAndSortProducts(search, sort);
+        });
+
+        // Xử lý sắp xếp
+        document.getElementById('sortSelect').addEventListener('change', function() {
+            const sort = this.value;
+            const search = document.getElementById('searchInput').value;
+            filterAndSortProducts(search, sort);
+        });
+    });
+
+    // Thêm sản phẩm
+    document.getElementById('addProductForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const errorMessage = document.getElementById('addErrorMessage');
+        errorMessage.style.display = 'none';
+
+        const formData = new FormData(this);
+        
+        fetch('/api/admin/add_product', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert('Thêm sản phẩm thành công');
+                location.reload();
+            } else {
+                errorMessage.textContent = result.message;
+                errorMessage.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi thêm sản phẩm:', error);
+            errorMessage.textContent = 'Lỗi hệ thống, vui lòng thử lại sau';
+            errorMessage.style.display = 'block';
+        });
+    });
+
+    // Sửa sản phẩm
+    function editProduct(productId) {
+        fetch(`/api/admin/product/${productId}`)
+            .then(response => response.json())
+            .then(product => {
+                if (product.success === false) {
+                    alert(product.message);
+                    return;
+                }
+                document.getElementById('edit_product_id').value = product.id;
+                document.getElementById('edit_name').value = product.name;
+                document.getElementById('edit_category_id').value = product.category_id;
+                document.getElementById('edit_description').value = product.description;
+                document.getElementById('edit_price').value = product.price;
+                document.getElementById('edit_discount_percentage').value = product.discount_percentage;
+                document.getElementById('edit_stock_quantity').value = product.stock_quantity;
+                document.getElementById('edit_image_url').value = product.image_url;
+                
+                document.getElementById('editProductModal').style.display = 'flex';
+            })
+            .catch(error => {
+                console.error('Lỗi khi lấy thông tin sản phẩm:', error);
+                alert('Đã xảy ra lỗi khi lấy thông tin sản phẩm.');
+            });
+    }
+
+    // Gửi cập nhật sản phẩm
+    document.getElementById('editProductForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const errorMessage = document.getElementById('editErrorMessage');
+        errorMessage.style.display = 'none';
+
+        const productId = document.getElementById('edit_product_id').value;
+        const formData = new FormData(this);
+        
+        fetch(`/api/admin/update_product/${productId}`, {
+            method: 'PUT',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert('Cập nhật sản phẩm thành công');
+                location.reload();
+            } else {
+                errorMessage.textContent = result.message;
+                errorMessage.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi cập nhật sản phẩm:', error);
+            errorMessage.textContent = 'Lỗi hệ thống, vui lòng thử lại sau';
+            errorMessage.style.display = 'block';
+        });
+    });
+
+    // Xóa sản phẩm
+    function deleteProduct(productId) {
+        if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
+            fetch(`/api/admin/delete_product/${productId}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert('Xóa sản phẩm thành công');
+                        location.reload();
+                    } else {
+                        alert(result.message);
+                    }
+                });
+        }
+    }
+
+    // Đóng modal khi click bên ngoài
+    window.onclick = function(event) {
+        const addModal = document.getElementById('addProductModal');
+        const editModal = document.getElementById('editProductModal');
+        if (event.target === addModal) {
+            closeAddModal();
+        }
+        if (event.target === editModal) {
+            closeEditModal();
+        }
+    };
+</script>
+{% endblock %}

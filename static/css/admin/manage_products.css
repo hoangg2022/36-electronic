@@ -1,0 +1,309 @@
+/* General styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f9f9f9, #e6e6e6);
+    margin: 0;
+    padding: 0;
+}
+
+/* Headings */
+h1, h2 {
+    color: #333;
+    margin-top: 20px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.2em;
+    margin-bottom: 15px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    font-size: 1.6em;
+    margin-bottom: 20px;
+    color: #4a90e2;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Form styling */
+form {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    max-width: 450px;
+    margin: 0 auto 30px auto;
+    border: 1px solid #ddd;
+}
+
+div {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+select option {
+    color: black;
+}
+
+input[type="text"],
+input[type="number"],
+textarea,
+input[type="file"],
+select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 1em;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+input[type="file"]:focus,
+select:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
+    outline: none;
+}
+
+textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+button {
+    background: linear-gradient(135deg, #4a90e2, #f4b678);
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+    display: block;
+    margin: 15px auto 0 auto;
+}
+
+button:hover {
+    background: linear-gradient(135deg, #6bb5ff, #f7c894);
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+button[type="button"] {
+    background: #e63946;
+}
+
+button[type="button"]:hover {
+    background: #d62828;
+}
+
+/* Error message */
+.error-message {
+    color: #e63946;
+    font-size: 0.9em;
+    margin: 10px 0;
+    text-align: center;
+    display: none;
+}
+
+/* Table styling */
+table {
+    width: 90%;
+    margin: 0 auto 30px auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background: linear-gradient(135deg, #4a90e2, #f4b678);
+    color: #fff;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9em;
+    letter-spacing: 0.5px;
+}
+
+td {
+    color: #333;
+    font-size: 0.95em;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover td {
+    background: #f0f8ff;
+    transition: background 0.3s;
+}
+
+td button {
+    background: #2a9d8f;
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 5px;
+    transition: background 0.3s, transform 0.3s;
+    font-size: 0.9em;
+}
+
+td button:hover {
+    background: #218c81;
+    transform: scale(1.05);
+}
+
+td button:last-child {
+    background: #e63946;
+}
+
+td button:last-child:hover {
+    background: #d62828;
+}
+
+/* Modal styling */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 20px 0;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    position: relative;
+    margin: 20px auto;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+.modal-content h2, .modal-content h3 {
+    margin-top: 0;
+    color: #4a90e2;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #333;
+}
+
+/* Add product button */
+.add-product-btn {
+    background: linear-gradient(135deg, #4a90e2, #f4b678);
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+    display: block;
+    margin: 20px auto;
+}
+
+.add-product-btn:hover {
+    background: linear-gradient(135deg, #6bb5ff, #f7c894);
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Search and sort */
+#searchInput, #sortSelect {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-right: 10px;
+    font-size: 1em;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#searchInput:focus, #sortSelect:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
+    outline: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    table {
+        width: 100%;
+        display: block;
+        overflow-x: auto;
+    }
+
+    th, td {
+        min-width: 100px;
+        font-size: 0.85em;
+    }
+
+    form {
+        max-width: 90%;
+    }
+
+    h1 {
+        font-size: 1.8em;
+    }
+
+    h2 {
+        font-size: 1.4em;
+    }
+}
+
+@media (max-width: 480px) {
+    form input, form select, form textarea {
+        font-size: 0.9em;
+        padding: 10px;
+    }
+
+    button {
+        font-size: 1em;
+        padding: 10px 20px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    h2 {
+        font-size: 1.2em;
+    }
+}
