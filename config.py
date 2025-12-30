@@ -16,15 +16,16 @@ logger = logging.getLogger(__name__)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Hàm tạo kết nối MySQL (Dùng chung logic với models/database.py)
+# Hàm tạo kết nối MySQL
 def get_db_connection():
     try:
         return mysql.connector.connect(
-            host=os.environ.get('MYSQLHOST', 'localhost'),
-            user=os.environ.get('MYSQLUSER', 'root'),
-            password=os.environ.get('MYSQLPASSWORD', 'H7team9090@'),
-            database=os.environ.get('MYSQLDATABASE', 'test'),
-            port=int(os.environ.get('MYSQLPORT', 4000))
+            host=os.environ.get('MYSQLHOST'),
+            user=os.environ.get('MYSQLUSER'),
+            password=os.environ.get('MYSQLPASSWORD'),
+            database=os.environ.get('MYSQLDATABASE'),
+            port=int(os.environ.get('MYSQLPORT', 4000)),
+            ssl_disabled=False
         )
     except mysql.connector.Error as err:
         logger.error(f"Lỗi kết nối cơ sở dữ liệu: {err}")
